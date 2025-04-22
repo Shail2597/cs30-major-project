@@ -4,12 +4,18 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
+let lvl=1;
+let lvl1;
 
+function preload(){
+    lvl1 = loadImage("assets (final draft)/lvl 1.png");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  image(lvl1,0,0,width,height);
 }
 
 function draw() {
-  background(220);
+  //background(220);
 }
