@@ -10,11 +10,10 @@ let xOffset, yOffset;
 let p1;
 
 // size of each tile in pixels
-const tileWidth  = 80;  // ← whatever width you like
-const tileHeight = 46;  // ← keep your original height
+const tileWidth  = 80;  
+const tileHeight = 46;  
 
 // 2D literal: 1 = solid block, 0 = empty
-// Edit these rows/cols to change your collision layout
 const levelMap = [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -40,13 +39,12 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   calculateOffsets();
   generateGrid();
-  p1 = new Player(windowWidth/2,windowHeight/2 );
+  p1 = new Player(windowWidth/2, windowHeight/2);
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   calculateOffsets();
-  // grid stays the same, since levelMap never changes here
 }
 
 function calculateOffsets() {
@@ -54,7 +52,6 @@ function calculateOffsets() {
   yOffset = (windowHeight - lvl1.height) / 2;
 }
 
-// Copy the literal into our working grid and set dimensions
 function generateGrid() {
   grid = levelMap.map(row => row.slice());
   gridRows = grid.length;
@@ -93,8 +90,6 @@ function drawGrid() {
   }
 }
 
-
-
 class Player {
   constructor(x, y) {
     this.x        = x;
@@ -130,60 +125,60 @@ class Player {
     const right  = this.x + this.size;
     const top    = this.y;
     const bottom = this.y + this.size;
-  
+
     // ── Vertical collisions ───────────────────
     if (this.vy > 0) {
       // falling → feet collision
-      let row = floor((bottom - yOffset) / tileHeight);
+      let row = floor(bottom / tileHeight);
       for (let footX of [left, right - 1]) {
-        let col = floor((footX - xOffset) / tileWidth);
+        let col = floor(footX / tileWidth);
         if (this._isBlockAt(row, col)) {
           // snap on top of tile
-          this.y        = yOffset + row * tileHeight - this.size;
+          this.y        = row * tileHeight - this.size;
           this.vy       = 0;
           this.onGround = true;
         }
       }
     } else if (this.vy < 0) {
       // rising → head bump
-      let row = floor((top - yOffset) / tileHeight);
+      let row = floor(top / tileHeight);
       for (let headX of [left, right - 1]) {
-        let col = floor((headX - xOffset) / tileWidth);
+        let col = floor(headX / tileWidth);
         if (this._isBlockAt(row, col)) {
-          this.y  = yOffset + (row + 1) * tileHeight;
+          // snap below the tile you hit
+          this.y  = (row + 1) * tileHeight;
           this.vy = 0;
         }
       }
     }
-  
+
     // ── Horizontal collisions ────────────────
     for (let checkY of [top, bottom - 1]) {
-      let row = floor((checkY - yOffset) / tileHeight);
-  
+      let row = floor(checkY / tileHeight);
+
       // left
       if (keyIsDown(LEFT_ARROW)) {
-        let col = floor((left - xOffset) / tileWidth);
+        let col = floor(left / tileWidth);
         if (this._isBlockAt(row, col)) {
-          this.x = xOffset + (col + 1) * tileWidth;
+          this.x = (col + 1) * tileWidth;
         }
       }
       // right
       if (keyIsDown(RIGHT_ARROW)) {
-        let col = floor((right - xOffset) / tileWidth);
+        let col = floor(right / tileWidth);
         if (this._isBlockAt(row, col)) {
-          this.x = xOffset + col * tileWidth - this.size;
+          this.x = col * tileWidth - this.size;
         }
       }
     }
-  
+
     // ── Floor fallback ───────────────────────
-    if (this.y + this.size > height) {
+    if (bottom > height) {
       this.y        = height - this.size;
       this.vy       = 0;
       this.onGround = true;
     }
   }
-  
 
   // safe check for block presence
   _isBlockAt(row, col) {
@@ -200,4 +195,3 @@ class Player {
     rect(this.x, this.y, this.size, this.size);
   }
 }
-
