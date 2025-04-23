@@ -9,195 +9,195 @@ let lvl1;
 let xOffset, yOffset;
 let p1;
 
-// size of each tile in pixels
-const tileWidth  = 80;  // ← whatever width you like
-const tileHeight = 46;  // ← keep your original height
-
-// 2D literal: 1 = solid block, 0 = empty
-// Edit these rows/cols to change your collision layout
-const levelMap = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
-  [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-  [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-  [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-  [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-  [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-];
-
-let grid = [];
-let gridRows, gridCols;
+let START_X, START_Y;
 
 function preload() {
-  lvl1 = loadImage("assets (final draft)/lvl 1.png");
+  lvl1 = loadImage("assets/lvl 1.png");
+
+  // Create the player object with properties
+  p1 = {
+    x: windowWidth / 2,
+    y: windowHeight / 2,
+    width: 100, // Increased width
+    height: 100, // Increased height
+    vel: { x: 0, y: 0 },
+    mirrorX: 1, // 1 for normal, -1 for flipped
+    currentAnimation: "idle",
+    frameIndex: 0,
+    frameDelay: 5, // Delay between frames
+    idleSpriteSheet: loadImage("assets/king_human_idle.png"),
+    runningSpriteSheet: loadImage("assets/king_human_run.png"),
+    jumpSprite: loadImage("assets/king_human_jump.png"), // Single-frame jump sprite
+    idleFrames: 11,
+    runningFrames: 8,
+    isJumping: false, // Track if the player is jumping
+  };
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  // Initialize START_X and START_Y after windowWidth and windowHeight are available
+  START_X = (windowWidth - 793) / 2;
+  START_Y = (windowHeight - 192) / 2;
+
+  // Define the rectangle boundaries
+  rectangleBounds = {
+    topLeft: { x: START_X, y: START_Y },
+    bottomRight: { x: START_X + 793, y: START_Y + 192 },
+  };
+
   calculateOffsets();
-  generateGrid();
-  p1 = new Player(windowWidth/2,windowHeight/2 );
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   calculateOffsets();
-  // grid stays the same, since levelMap never changes here
+
+  // Recalculate START_X and START_Y on window resize
+  START_X = (windowWidth - 793) / 2;
+  START_Y = (windowHeight - 192) / 2;
+
+  // Update rectangle boundaries
+  rectangleBounds = {
+    topLeft: { x: START_X, y: START_Y },
+    bottomRight: { x: START_X + 793, y: START_Y + 192 },
+  };
 }
 
 function calculateOffsets() {
-  xOffset = (windowWidth  - lvl1.width)  / 2;
+  xOffset = (windowWidth - lvl1.width) / 2;
   yOffset = (windowHeight - lvl1.height) / 2;
-}
-
-// Copy the literal into our working grid and set dimensions
-function generateGrid() {
-  grid = levelMap.map(row => row.slice());
-  gridRows = grid.length;
-  gridCols = grid[0].length;
 }
 
 function draw() {
   background(62, 56, 80);
   image(lvl1, xOffset, yOffset);
-  drawGrid();
-  
-  p1.move();
-  p1.checkGridCollision();
-  p1.display();
+
+  let newAnimation;
+
+if (p1.isJumping) {
+  newAnimation = "jump";
+} else if (p1.vel.x !== 0) {
+  newAnimation = "running";
+} else {
+  newAnimation = "idle";
 }
 
-function drawGrid() {
-  const cols = ceil(width  / tileWidth);
-  const rows = ceil(height / tileHeight);
-
-  stroke(200,200,200,100);
-  strokeWeight(1);
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      let px = c * tileWidth;
-      let py = r * tileHeight;
-
-      if (r < gridRows && c < gridCols && grid[r][c] === 1) {
-        fill(255,0,0,120);
-      } else {
-        fill(200,200,200,30);
-      }
-      rect(px, py, tileWidth, tileHeight);
-    }
-  }
+if (newAnimation !== p1.currentAnimation) {
+  p1.currentAnimation = newAnimation;
+  p1.frameIndex = 0;
 }
 
 
+  // Handle movement and animation switching
+  let isMoving = false;
 
-class Player {
-  constructor(x, y) {
-    this.x        = x;
-    this.y        = y;
-    this.size     = 50;
-    this.speed    = 10;    // also jump strength
-    this.vy       = 0;
-    this.gravity  = 0.5;
-    this.onGround = false;
+  if (keyIsDown(LEFT_ARROW)) {
+    p1.vel.x = -5;
+    p1.mirrorX = -1; // Flip the sprite to face left
+    isMoving = true;
+  } else if (keyIsDown(RIGHT_ARROW)) {
+    p1.vel.x = 5;
+    p1.mirrorX = 1; // Flip the sprite to face right
+    isMoving = true;
+  } else {
+    p1.vel.x = 0;
   }
 
-  move() {
-    // horizontal movement
-    let newX = this.x;
-    if (keyIsDown(LEFT_ARROW))  newX -= this.speed;
-    if (keyIsDown(RIGHT_ARROW)) newX += this.speed;
-    this.x = constrain(newX, 0, width - this.size);
+  // Handle jumping
+  if (keyIsDown(UP_ARROW) && !p1.isJumping) {
+    p1.vel.y = -10; // Jump strength
+    p1.isJumping = true;
+  }
 
-    // jump if on ground
-    if (keyIsDown(UP_ARROW) && this.onGround) {
-      this.vy = -this.speed;
-      this.onGround = false;
+  // Apply gravity
+  p1.vel.y += 0.5; // Gravity strength
+
+  // Update position
+  p1.x += p1.vel.x;
+  p1.y += p1.vel.y;
+
+  // Constrain the player within the rectangle boundaries
+  p1.x = constrain(
+    p1.x,
+    rectangleBounds.topLeft.x + p1.width / 2,
+    rectangleBounds.bottomRight.x - p1.width / 2
+  );
+
+  if (p1.y + p1.height / 2 >= rectangleBounds.bottomRight.y) {
+    p1.y = rectangleBounds.bottomRight.y - p1.height / 2;
+    p1.vel.y = 0; // Stop falling when on the ground
+
+    // Only reset jumping state if the player is grounded
+    if (p1.isJumping) {
+      p1.isJumping = false;
     }
-
-    // apply gravity
-    this.vy += this.gravity;
-    this.y  += this.vy;
+  } else {
+    // If the player is not grounded, ensure the jumping state is active
+    p1.isJumping = true;
   }
 
-  checkGridCollision() {
-    this.onGround = false;
-    const left   = this.x;
-    const right  = this.x + this.size;
-    const top    = this.y;
-    const bottom = this.y + this.size;
-  
-    // ── Vertical collisions ───────────────────
-    if (this.vy > 0) {
-      // falling → feet collision
-      let row = floor((bottom - yOffset) / tileHeight);
-      for (let footX of [left, right - 1]) {
-        let col = floor((footX - xOffset) / tileWidth);
-        if (this._isBlockAt(row, col)) {
-          // snap on top of tile
-          this.y        = yOffset + row * tileHeight - this.size;
-          this.vy       = 0;
-          this.onGround = true;
-        }
-      }
-    } else if (this.vy < 0) {
-      // rising → head bump
-      let row = floor((top - yOffset) / tileHeight);
-      for (let headX of [left, right - 1]) {
-        let col = floor((headX - xOffset) / tileWidth);
-        if (this._isBlockAt(row, col)) {
-          this.y  = yOffset + (row + 1) * tileHeight;
-          this.vy = 0;
-        }
-      }
-    }
-  
-    // ── Horizontal collisions ────────────────
-    for (let checkY of [top, bottom - 1]) {
-      let row = floor((checkY - yOffset) / tileHeight);
-  
-      // left
-      if (keyIsDown(LEFT_ARROW)) {
-        let col = floor((left - xOffset) / tileWidth);
-        if (this._isBlockAt(row, col)) {
-          this.x = xOffset + (col + 1) * tileWidth;
-        }
-      }
-      // right
-      if (keyIsDown(RIGHT_ARROW)) {
-        let col = floor((right - xOffset) / tileWidth);
-        if (this._isBlockAt(row, col)) {
-          this.x = xOffset + col * tileWidth - this.size;
-        }
-      }
-    }
-  
-    // ── Floor fallback ───────────────────────
-    if (this.y + this.size > height) {
-      this.y        = height - this.size;
-      this.vy       = 0;
-      this.onGround = true;
-    }
-  }
-  
-
-  // safe check for block presence
-  _isBlockAt(row, col) {
-    return (
-      row >= 0 && row < gridRows &&
-      col >= 0 && col < gridCols &&
-      grid[row][col] === 1
-    );
+  // Switch animations based on movement and jumping
+  if (p1.isJumping) { // Prioritize jump animation if the player is in the air
+    p1.currentAnimation = "jump";
+  } else if (p1.vel.x !== 0) { // Check if the player is moving horizontally
+    p1.currentAnimation = "running";
+  } else {
+    p1.currentAnimation = "idle";
   }
 
-  display() {
-    noStroke();
-    fill(255, 100, 100);
-    rect(this.x, this.y, this.size, this.size);
-  }
+  // Draw the sprite manually
+  drawSprite(p1);
 }
 
+function drawSprite(sprite) {
+  let spriteSheet;
+  let totalFrames;
+
+  // Determine the current animation
+  if (sprite.currentAnimation === "idle") {
+    spriteSheet = sprite.idleSpriteSheet;
+    totalFrames = sprite.idleFrames;
+  } else if (sprite.currentAnimation === "running") {
+    spriteSheet = sprite.runningSpriteSheet;
+    totalFrames = sprite.runningFrames;
+  } else if (sprite.currentAnimation === "jump") {
+    spriteSheet = sprite.jumpSprite; // Use the single-frame jump sprite
+    totalFrames = 1; // Single frame
+  }
+
+  // Ensure the spriteSheet is valid
+  if (!spriteSheet) {
+    console.error("Sprite sheet not loaded for animation:", sprite.currentAnimation);
+    return;
+  }
+
+  // Calculate the frame width and height
+  let frameWidth = spriteSheet.width / totalFrames;
+  let frameHeight = spriteSheet.height;
+
+  // Update the frame index based on the frame delay (only for multi-frame animations)
+  if (totalFrames > 1 && frameCount % sprite.frameDelay === 0) {
+    sprite.frameIndex = (sprite.frameIndex + 1) % totalFrames;
+  } else if (totalFrames === 1) {
+    sprite.frameIndex = 0; // Ensure the frame index is always 0 for single-frame animations
+  }
+
+  // Draw the current frame
+  push();
+  translate(sprite.x, sprite.y);
+  scale(sprite.mirrorX, 1); // Flip the sprite if necessary
+  image(
+    spriteSheet,
+    -sprite.width / 2,
+    -sprite.height / 2,
+    sprite.width,
+    sprite.height,
+    sprite.frameIndex * frameWidth,
+    0,
+    frameWidth,
+    frameHeight
+  );
+  pop();
+}
