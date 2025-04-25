@@ -5,14 +5,15 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
-let lvl1;
-let xOffset, yOffset;
+let lvl1Image;
+let lvl1XOffset, lvl1YOffset;
 let p1;
 
-let START_X, START_Y;
+let lvl1StartX, lvl1StartY;
+let lvl1Bounds;
 
 function preload() {
-  lvl1 = loadImage("assets/lvl 1.png");
+  lvl1Image = loadImage("assets/lvl 1.png");
 
   // Create the player object with properties
   p1 = {
@@ -37,30 +38,27 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  // Initialize START_X and START_Y after windowWidth and windowHeight are available
-  START_X = (windowWidth - 793) / 2;
-  START_Y = (windowHeight - 192) / 2;
+  // Initialize lvl1StartX and lvl1StartY after windowWidth and windowHeight are available
+  lvl1StartX = (windowWidth - 893) / 2;
+  lvl1StartY = (windowHeight - 192) / 2;
 
-  // Define the rectangle boundaries
-  rectangleBounds = {
-    topLeft: { x: START_X, y: START_Y },
-    bottomRight: { x: START_X + 793, y: START_Y + 192 },
+  // Define the rectangle boundaries for lvl1
+  lvl1Bounds = {
+    topLeft: { x: lvl1StartX, y: lvl1StartY },
+    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
   };
 
-  calculateOffsets();
+  calculateLvl1Offsets();
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  calculateOffsets();
+  calculateLvl1Offsets();
 
-  // Recalculate START_X and START_Y on window resize
-  START_X = (windowWidth - 793) / 2;
-  START_Y = (windowHeight - 192) / 2;
+  // Recalculate lvl1StartX and lvl1StartY on window resize
+  lvl1StartX = (windowWidth - 793) / 2;
+  lvl1StartY = (windowHeight - 192) / 2;
 
-  // Update rectangle boundaries
-  rectangleBounds = {
-    topLeft: { x: START_X, y: START_Y },
     bottomRight: { x: START_X + 793, y: START_Y + 192 },
   };
 }
@@ -68,39 +66,50 @@ function windowResized() {
 function calculateOffsets() {
   xOffset = (windowWidth - lvl1.width) / 2;
   yOffset = (windowHeight - lvl1.height) / 2;
+function calculateLvl1Offsets() {
+  lvl1XOffset = (windowWidth - lvl1Image.width) / 2;
+  lvl1YOffset = (windowHeight - lvl1Image.height) / 2;
 }
 
 function draw() {
   background(62, 56, 80);
-  image(lvl1, xOffset, yOffset);
 
+  // Draw lvl1
+  image(lvl1Image, lvl1XOffset, lvl1YOffset);
+
+  // Update player state and position
+  updatePlayerState();
+  updatePlayerPosition();
+
+  // Draw the player
+  drawSprite(p1);
+}
+
+function updatePlayerState() {
   let newAnimation;
 
-if (p1.isJumping) {
-  newAnimation = "jump";
-} else if (p1.vel.x !== 0) {
-  newAnimation = "running";
-} else {
-  newAnimation = "idle";
+  if (p1.isJumping) {
+    newAnimation = "jump";
+  } else if (p1.vel.x !== 0) {
+    newAnimation = "running";
+  } else {
+    newAnimation = "idle";
+  }
+
+  if (newAnimation !== p1.currentAnimation) {
+    p1.currentAnimation = newAnimation;
+    p1.frameIndex = 0;
+  }
 }
 
-if (newAnimation !== p1.currentAnimation) {
-  p1.currentAnimation = newAnimation;
-  p1.frameIndex = 0;
-}
-
-
-  // Handle movement and animation switching
-  let isMoving = false;
-
+function updatePlayerPosition() {
+  // Handle movement
   if (keyIsDown(LEFT_ARROW)) {
     p1.vel.x = -5;
     p1.mirrorX = -1; // Flip the sprite to face left
-    isMoving = true;
   } else if (keyIsDown(RIGHT_ARROW)) {
     p1.vel.x = 5;
     p1.mirrorX = 1; // Flip the sprite to face right
-    isMoving = true;
   } else {
     p1.vel.x = 0;
   }
@@ -118,15 +127,15 @@ if (newAnimation !== p1.currentAnimation) {
   p1.x += p1.vel.x;
   p1.y += p1.vel.y;
 
-  // Constrain the player within the rectangle boundaries
+  // Constrain the player within lvl1 boundaries
   p1.x = constrain(
     p1.x,
-    rectangleBounds.topLeft.x + p1.width / 2,
-    rectangleBounds.bottomRight.x - p1.width / 2
+    lvl1Bounds.topLeft.x + p1.width / 2,
+    lvl1Bounds.bottomRight.x - p1.width / 2
   );
 
-  if (p1.y + p1.height / 2 >= rectangleBounds.bottomRight.y) {
-    p1.y = rectangleBounds.bottomRight.y - p1.height / 2;
+  if (p1.y + p1.height / 2 >= lvl1Bounds.bottomRight.y) {
+    p1.y = lvl1Bounds.bottomRight.y - p1.height / 2;
     p1.vel.y = 0; // Stop falling when on the ground
 
     // Only reset jumping state if the player is grounded
@@ -137,18 +146,6 @@ if (newAnimation !== p1.currentAnimation) {
     // If the player is not grounded, ensure the jumping state is active
     p1.isJumping = true;
   }
-
-  // Switch animations based on movement and jumping
-  if (p1.isJumping) { // Prioritize jump animation if the player is in the air
-    p1.currentAnimation = "jump";
-  } else if (p1.vel.x !== 0) { // Check if the player is moving horizontally
-    p1.currentAnimation = "running";
-  } else {
-    p1.currentAnimation = "idle";
-  }
-
-  // Draw the sprite manually
-  drawSprite(p1);
 }
 
 function drawSprite(sprite) {
