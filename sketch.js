@@ -59,13 +59,13 @@ function windowResized() {
   lvl1StartX = (windowWidth - 793) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
 
-    bottomRight: { x: START_X + 793, y: START_Y + 192 },
+  // Update rectangle boundaries for lvl1
+  lvl1Bounds = {
+    topLeft: { x: lvl1StartX, y: lvl1StartY },
+    bottomRight: { x: lvl1StartX + 793, y: lvl1StartY + 192 },
   };
 }
 
-function calculateOffsets() {
-  xOffset = (windowWidth - lvl1.width) / 2;
-  yOffset = (windowHeight - lvl1.height) / 2;
 function calculateLvl1Offsets() {
   lvl1XOffset = (windowWidth - lvl1Image.width) / 2;
   lvl1YOffset = (windowHeight - lvl1Image.height) / 2;
