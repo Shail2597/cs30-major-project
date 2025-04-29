@@ -56,7 +56,7 @@ function windowResized() {
   calculateLvl1Offsets();
 
   // Recalculate lvl1StartX and lvl1StartY on window resize
-  lvl1StartX = (windowWidth - 793) / 2;
+  lvl1StartX = (windowWidth - 793 - p1.width) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
 
   // Update rectangle boundaries for lvl1
