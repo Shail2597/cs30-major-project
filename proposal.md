@@ -6,11 +6,13 @@ Building a 2D Game(maybe a platformer)
 ## Needs to Have
 - A Physics Engine
 - A Basic power-up
-- More than one type of location tracking enemies
+- A one type of location tracking enemies
 - Basic Sound
 - Efficient collision detection system
 - Checkpoint system
 - Different Levels
+    - 2 Different Worlds
+        - 4 Levels Each
 - Fighting Mechanism
 - Different Animations
 - Start, Pause, End Screen
