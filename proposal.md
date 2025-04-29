@@ -13,7 +13,6 @@ Building a 2D Game(maybe a platformer)
 - Different Levels
 - Fighting Mechanism
 - Different Animations
-- Different Game Modes
 - Start, Pause, End Screen
 - Stat Bars
 - Changeble Key Binds
@@ -21,6 +20,7 @@ Building a 2D Game(maybe a platformer)
 
 
 ## Nice to Have
+- Different Game Modes
 - A Scoring System
 - a PVP mode
 - User Generated Levels
