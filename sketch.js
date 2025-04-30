@@ -11,38 +11,40 @@ let lvl1XOffset, lvl1YOffset;
 let lvl1StartX, lvl1StartY;
 let lvl1Bounds;
 
+
 function preload() {
   lvl1Image = loadImage("assets/lvl 1.png");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-
+  let king = new King();
+  
   // Initialize lvl1StartX and lvl1StartY after windowWidth and windowHeight are available
   lvl1StartX = (windowWidth - 893) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
-
+  
   // Define the rectangle boundaries for lvl1
   lvl1Bounds = {
     topLeft: { x: lvl1StartX, y: lvl1StartY },
     bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
   };
-
+  
   calculateLvl1Offsets();
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   calculateLvl1Offsets();
-
+  
   // Recalculate lvl1StartX and lvl1StartY on window resize
-  lvl1StartX = (windowWidth - 793 - King.width) / 2;
+  lvl1StartX = (windowWidth - 893) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
-
+  
   // Update rectangle boundaries for lvl1
   lvl1Bounds = {
     topLeft: { x: lvl1StartX, y: lvl1StartY },
-    bottomRight: { x: lvl1StartX + 793, y: lvl1StartY + 192 },
+    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
   };
 }
 
@@ -57,12 +59,11 @@ function draw() {
   // Draw lvl1
   image(lvl1Image, lvl1XOffset, lvl1YOffset);
 
-
-  allKing();
+  allking();
 }
 
-function allKing(){
-  King.updatePosition();
-  King.updateState();
-  King.draw();
+function allking(){
+  king.updatePosition();
+  king.updateState();
+  king.draw();
 }
