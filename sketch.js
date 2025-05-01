@@ -11,6 +11,8 @@ let lvl1XOffset, lvl1YOffset;
 let lvl1StartX, lvl1StartY;
 let lvl1Bounds;
 
+let player;
+
 
 function preload() {
   lvl1Image = loadImage("assets/lvl 1.png");
@@ -18,7 +20,7 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  let king = new King();
+  player = new King(windowWidth/2, windowHeight/2);
   
   // Initialize lvl1StartX and lvl1StartY after windowWidth and windowHeight are available
   lvl1StartX = (windowWidth - 893) / 2;
@@ -59,11 +61,7 @@ function draw() {
   // Draw lvl1
   image(lvl1Image, lvl1XOffset, lvl1YOffset);
 
-  allking();
+  player.doAll();
 }
 
-function allking(){
-  king.updatePosition();
-  king.updateState();
-  king.draw();
-}
+
