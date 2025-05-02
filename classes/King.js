@@ -1,5 +1,9 @@
   // Create the player object with properties
 //let King;
+let spi;
+
+
+
 class King {
     constructor(){
     this.x = windowWidth/2;
@@ -11,7 +15,7 @@ class King {
     this.currentAnimation= "idle";
     this.frameIndex= 0;
     this.frameDelay= 5; // Delay between frames
-    this.idleSpriteSheet= loadImage("assets/king_human_idle.png");
+    this.idleSpriteSheet= loadImage("assets/king_idle.png");
     this.runningSpriteSheet= loadImage("assets/king_human_run.png");
     this.jumpSprite= loadImage("assets/king_human_jump.png"); // Single-frame jump sprite
     this.idleFrames= 11;
@@ -131,13 +135,18 @@ updateState() {
         frameWidth,
         frameHeight
       );
-      pop();
+        pop();
   }
-
 
   doAll(){
     this.updatePosition();
     this.updateState();
     this.draw();
   }
+  spid(){
+    king_idle = loadAni('assets/king_idle.png'{width: 78, height: 58, frames:11})
+  spi = new Sprite(king_idle,50,50);
+  }
 }
+
+
