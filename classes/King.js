@@ -1,8 +1,7 @@
   // Create the player object with properties
 //let King;
 let spi;
-
-
+let floor1;
 
 class King {
     constructor(){
@@ -144,8 +143,27 @@ updateState() {
     this.draw();
   }
   spid(){
-    king_idle = loadAni('assets/king_idle.png'{width: 78, height: 58, frames:11})
-  spi = new Sprite(king_idle,50,50);
+    spi = new Sprite( windowWidth/2, windowHeight/2, 100, 100);
+    spi.addAnimation('idle', this.idleSpriteSheet, 11);
+    spi.addAnimation('running', this.runningSpriteSheet, 8);  
+    spi.addAnimation('jump', this.jumpSprite, 0, 0, 78, 58, 1); // Single-frame jump sprite
+    if (kb.pressing('left')) {
+      spi.changeAni('running');
+      spi.vel.x = -2;
+      spi.scale.x = -1;
+    } else if (kb.pressing('right')) {
+      spi.changeAni('running');
+      spi.vel.x = 2;
+      spi.scale.x = 1;
+    } else {
+      spi.changeAni('idle');
+      spi.vel.x = 0;
+    }
+    floor1 = new Sprite();
+    floor1.y = 445;
+    floor1.w = 893;
+    floor1.h = 1;
+    floor1.collider = STATIC;
   }
 }
 

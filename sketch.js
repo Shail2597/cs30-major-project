@@ -12,10 +12,12 @@ let lvl1StartX, lvl1StartY;
 let lvl1Bounds;
 
 let player;
+let king_idle;
 
 
 
 function preload() {
+  king_idle = loadAni('assets/king_idle.png',{width: 78, height: 58, frames:11})
   lvl1Image = loadImage("assets/lvl 1.png");
 }
 
@@ -63,7 +65,7 @@ function draw() {
 
   // Draw lvl1
   image(lvl1Image, lvl1XOffset, lvl1YOffset);
-
+console.log(mouseX, mouseY);
   player.doAll();
 }
 
