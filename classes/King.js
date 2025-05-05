@@ -14,9 +14,9 @@ class King {
     this.currentAnimation= "idle";
     this.frameIndex= 0;
     this.frameDelay= 5; // Delay between frames
-    this.idleSpriteSheet= loadImage("assets/king_idle.png");
-    this.runningSpriteSheet= loadImage("assets/king_human_run.png");
-    this.jumpSprite= loadImage("assets/king_human_jump.png"); // Single-frame jump sprite
+    // this.idleSpriteSheet= loadImage("assets/king_idle.png");
+    // this.runningSpriteSheet= loadImage("assets/king_human_run.png");
+    // this.jumpSprite= loadImage("assets/king_human_jump.png"); // Single-frame jump sprite
     this.idleFrames= 11;
     this.runningFrames= 8;
     this.isJumping= false; // Track if the player is jumping
@@ -144,15 +144,26 @@ updateState() {
   }
   spid(){
     spi = new Sprite( windowWidth/2, windowHeight/2, 100, 100);
-    spi.addAnimation('idle', this.idleSpriteSheet, 11);
-    spi.addAnimation('running', this.runningSpriteSheet, 8);  
-    spi.addAnimation('jump', this.jumpSprite, 0, 0, 78, 58, 1); // Single-frame jump sprite
+    spi.spriteSheet = 'assets/king_human_full.png';
+    spi.addAnis({
+      attack: { row: 0, frames: 3 },
+      dead: { row: 1, frames: 4 },
+      door_in: { row: 2, frames: 8, frameDelay: 14 },
+      door_out: { row: 3, frames: 8, frameDelay: 14 },
+      fall: { row: 4},
+      ground: {row :5},
+      hit: { row: 6, frames:2 },
+      idle: { row: 7, frames: 11},
+      jump:{row:8},
+      run :{row:9, frames:8}
+    });
+    spi.changeAni('idle');
     if (kb.pressing('left')) {
-      spi.changeAni('running');
+      spi.changeAni('run');
       spi.vel.x = -2;
       spi.scale.x = -1;
     } else if (kb.pressing('right')) {
-      spi.changeAni('running');
+      spi.changeAni('run');
       spi.vel.x = 2;
       spi.scale.x = 1;
     } else {
