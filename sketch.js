@@ -13,39 +13,47 @@ let lvl1Bounds;
 
 let player;
 
-player = new King();
-
-
 function preload() {
-  new Canvas(1044,728);
-  // Initialize lvl1StartX and lvl1StartY after windowWidth and windowHeight are available
+  // Load level 1 image
+  lvl1Image = loadImage("assets/lvl 1.png");
+
+  // Initialize the player object and call its pre() method
+  player = new King();
+  player.pre();
+}
+
+function setup() {
+  // Create the canvas
+  createCanvas(windowWidth, windowHeight);
+
+  // Initialize level boundaries
   lvl1StartX = (windowWidth - 893) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
-  
-  // Define the rectangle boundaries for lvl1
+
   lvl1Bounds = {
     topLeft: { x: lvl1StartX, y: lvl1StartY },
     bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
   };
-  
-  calculateLvl1Offsets();
-  
-  lvl1Image = loadImage("assets/lvl 1.png");
-}
 
-function setup() {
-  world.gravity.y =10;
+  // Calculate offsets for level 1
+  calculateLvl1Offsets();
+
+  // Initialize physics world
+  world.gravity.y = 10;
+
+  // Initialize the floor
+  player.spid();
 }
 
 function windowResized() {
+  // Resize canvas and recalculate offsets
   resizeCanvas(windowWidth, windowHeight);
   calculateLvl1Offsets();
-  
-  // Recalculate lvl1StartX and lvl1StartY on window resize
+
+  // Update level boundaries
   lvl1StartX = (windowWidth - 893) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
-  
-  // Update rectangle boundaries for lvl1
+
   lvl1Bounds = {
     topLeft: { x: lvl1StartX, y: lvl1StartY },
     bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
@@ -53,17 +61,27 @@ function windowResized() {
 }
 
 function calculateLvl1Offsets() {
-  lvl1XOffset = (windowWidth - lvl1Image.width) / 2;
-  lvl1YOffset = (windowHeight - lvl1Image.height) / 2;
+  // Ensure lvl1Image is loaded before accessing its dimensions
+  if (lvl1Image) {
+    lvl1XOffset = (windowWidth - lvl1Image.width) / 2;
+    lvl1YOffset = (windowHeight - lvl1Image.height) / 2;
+  }
 }
 
 function draw() {
+  // Set background color
   background(62, 56, 80);
 
-  // Draw lvl1
-  image(lvl1Image, lvl1XOffset, lvl1YOffset);
-console.log(mouseX, mouseY);
-  //player.doAll();
+  // Draw level 1 image
+  if (lvl1Image) {
+    image(lvl1Image, lvl1XOffset, lvl1YOffset);
+  }
+
+  // Log mouse position for debugging
+  console.log(mouseX, mouseY);
+
+  // Update and draw the player sprite
+  player.doAll();
 }
 
 
