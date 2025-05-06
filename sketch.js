@@ -12,19 +12,12 @@ let lvl1StartX, lvl1StartY;
 let lvl1Bounds;
 
 let player;
-let king_idle;
 
+player = new King();
 
 
 function preload() {
-  lvl1Image = loadImage("assets/lvl 1.png");
-}
-
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-  player = new King();
-  world.gravity.y =10;
-  player.spid();
+  new Canvas(1044,728);
   // Initialize lvl1StartX and lvl1StartY after windowWidth and windowHeight are available
   lvl1StartX = (windowWidth - 893) / 2;
   lvl1StartY = (windowHeight - 192) / 2;
@@ -36,8 +29,13 @@ function setup() {
   };
   
   calculateLvl1Offsets();
+  
+  lvl1Image = loadImage("assets/lvl 1.png");
 }
 
+function setup() {
+  world.gravity.y =10;
+}
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
@@ -65,7 +63,7 @@ function draw() {
   // Draw lvl1
   image(lvl1Image, lvl1XOffset, lvl1YOffset);
 console.log(mouseX, mouseY);
-  player.doAll();
+  //player.doAll();
 }
 
 
