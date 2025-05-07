@@ -28,18 +28,18 @@ function setup() {
 
   // Initialize level boundaries
   lvl1StartX = (windowWidth - 893) / 2;
-  lvl1StartY = (windowHeight - 192) / 2;
+  lvl1StartY = (windowHeight - 433) / 2;
 
   lvl1Bounds = {
     topLeft: { x: lvl1StartX, y: lvl1StartY },
-    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
+    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 433 },
   };
 
   // Calculate offsets for level 1
   calculateLvl1Offsets();
 
   // Initialize physics world
-  world.gravity.y = 19;
+  world.gravity.y = 26;
 
   // Initialize the floor
   player.spid();
@@ -52,11 +52,11 @@ function windowResized() {
 
   // Update level boundaries
   lvl1StartX = (windowWidth - 893) / 2;
-  lvl1StartY = (windowHeight - 192) / 2;
+  lvl1StartY = (windowHeight - 433) / 2;
 
   lvl1Bounds = {
     topLeft: { x: lvl1StartX, y: lvl1StartY },
-    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
+    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 433 },
   };
 }
 

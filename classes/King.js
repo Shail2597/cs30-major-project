@@ -1,6 +1,7 @@
 // Create the player object with properties
 let spi;
 let floor1;
+let rightWall1,leftWall1,ceilling1;
 
 class King {
   constructor() {
@@ -36,9 +37,23 @@ class King {
     // Create the floor sprite
     floor1 = new Sprite();
     floor1.y = 433;
-    floor1.w = 893;
+    floor1.w = 870;
     floor1.h = 1;
     floor1.collider = STATIC;
+
+    rightWall1 = new Sprite();
+    rightWall1.x = 322-39;
+    rightWall1.w = 1;
+    rightWall1.h = 200;
+    rightWall1.y = 336;
+    rightWall1.collider = STA;
+
+    leftWall1 = new Sprite();
+    leftWall1.x = 316+800+39;
+    leftWall1.w = 1;
+    leftWall1.h = 200;
+    leftWall1.y = 336;
+    leftWall1.collider = STA;
   }
 
   handleInput() {
@@ -58,7 +73,7 @@ class King {
 
     // Handle jumping
     if (keyIsDown(UP_ARROW) && !this.isJumping) {
-      spi.vel.y = -6; // Jump strength
+      spi.vel.y = -8; // Jump strength
       this.isJumping = true;
       spi.changeAni('jump');
     }
@@ -71,7 +86,7 @@ class King {
     // Check if the player is on the ground
     if (spi.collides(floor1)) {
       this.isJumping = false; // Reset jumping state
-spi.changeAni('idle'); // Reset to idle animation when grounded
+    spi.changeAni('idle'); // Reset to idle animation when grounded
     }
 
     // Handle attack
