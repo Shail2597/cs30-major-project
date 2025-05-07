@@ -102,6 +102,7 @@ class King {
     // Update and draw the player sprite
     spi.update();
     spi.draw();
+    spi.scale = 2; // Scale the sprite for better visibility
   }
 }
 // //let King;
