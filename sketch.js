@@ -39,7 +39,7 @@ function setup() {
   calculateLvl1Offsets();
 
   // Initialize physics world
-  world.gravity.y = 10;
+  world.gravity.y = 19;
 
   // Initialize the floor
   player.spid();

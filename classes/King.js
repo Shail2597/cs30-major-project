@@ -44,11 +44,11 @@ class King {
   handleInput() {
     // Handle horizontal movement
     if (keyIsDown(RIGHT_ARROW)) {
-      spi.vel.x = 5;
+      spi.vel.x = 6;
       spi.mirror.x = false; // Face right (no mirroring)
       spi.changeAni('run');
     } else if (keyIsDown(LEFT_ARROW)) {
-      spi.vel.x = -5;
+      spi.vel.x = -6;
       spi.mirror.x = true; // Face left (mirroring)
       spi.changeAni('run');
     } else {
