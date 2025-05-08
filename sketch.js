@@ -8,41 +8,72 @@
 let lvl1Image;
 let lvl1XOffset, lvl1YOffset;
 
+let lvl1bounds = {
+  lvl1width : 797,
+  lvl1height : 143,
+  lvl1boxwidth : 75 ,
+  lvl1boxheight : 63.5
+}
+
 let lvl1StartX, lvl1StartY;
-let lvl1Bounds;
+let lvl1width = 797;
+let lvl1height = 143;
+let lvl1boxwidth = 75 ;
+let lvl1boxheight = 63.5;
+let lvl1boxstartX ;
+let lvl1boxendX ;
+let lvl1boxstartY ;
+
+
 
 let player;
 
 function preload() {
   // Load level 1 image
   lvl1Image = loadImage("assets/lvl 1.png");
-
+  
   // Initialize the player object and call its pre() method
   player = new King();
   player.pre();
-}
+}  
 
 function setup() {
   // Create the canvas
   createCanvas(windowWidth, windowHeight);
-
-  // Initialize level boundaries
-  lvl1StartX = (windowWidth - 893) / 2;
-  lvl1StartY = (windowHeight - 192) / 2;
-
-  lvl1Bounds = {
-    topLeft: { x: lvl1StartX, y: lvl1StartY },
-    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
+  
+  // Update level boundaries
+  lvl1bounds = {
+    lvl1width : 797,
+    lvl1height : 143,
+    lvl1boxwidth : 75 ,
+    lvl1boxheight : 63.5
   };
+  lvl1bounds.lvl1StartX = width / 2;
+  lvl1bounds.lvl1StartY = ((height - lvl1bounds.lvl1height) / 2) + lvl1bounds.lvl1height;
+  lvl1bounds.lvl1boxstartX = lvl1bounds.lvl1StartX - (lvl1bounds.lvl1width / 2);
+  lvl1bounds.lvl1boxendX = lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1boxwidth;
+  lvl1bounds.lvl1boxstartY = lvl1bounds.lvl1StartY - lvl1bounds.lvl1boxheight;
+
 
   // Calculate offsets for level 1
   calculateLvl1Offsets();
 
   // Initialize physics world
-  world.gravity.y = 10;
-
+  world.gravity.y = 11;
   // Initialize the floor
-  player.spid();
+  player.spid(lvl1bounds.lvl1StartX, 
+    lvl1bounds.lvl1StartY, 
+    lvl1bounds.lvl1width, 
+    lvl1bounds.lvl1boxendX, 
+    lvl1bounds.lvl1boxstartY + lvl1bounds.lvl1boxheight / 2, 
+    lvl1bounds.lvl1boxwidth,
+    lvl1bounds.lvl1boxheight,
+    lvl1bounds.lvl1boxstartY, 
+    lvl1bounds.lvl1boxstartX,
+    lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1width,
+    lvl1bounds.lvl1StartY - (lvl1bounds.lvl1height/2),
+    lvl1bounds.lvl1height  
+  );
 }
 
 function windowResized() {
@@ -51,20 +82,15 @@ function windowResized() {
   calculateLvl1Offsets();
 
   // Update level boundaries
-  lvl1StartX = (windowWidth - 893) / 2;
-  lvl1StartY = (windowHeight - 192) / 2;
+  lvl1StartX = width / 2;
+  lvl1StartY = (height - lvl1height) / 2;
 
-  lvl1Bounds = {
-    topLeft: { x: lvl1StartX, y: lvl1StartY },
-    bottomRight: { x: lvl1StartX + 893, y: lvl1StartY + 192 },
-  };
 }
-
 function calculateLvl1Offsets() {
   // Ensure lvl1Image is loaded before accessing its dimensions
   if (lvl1Image) {
-    lvl1XOffset = (windowWidth - lvl1Image.width) / 2;
-    lvl1YOffset = (windowHeight - lvl1Image.height) / 2;
+    lvl1XOffset = (width - lvl1Image.width) / 2;
+    lvl1YOffset = (height - lvl1Image.height) / 2;
   }
 }
 
