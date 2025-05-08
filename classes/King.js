@@ -74,22 +74,21 @@ class King {
       spi.changeAni('idle');
     }
     
-    // Handle jumping
     if (keyIsDown(UP_ARROW) && !this.isJumping) {
-      spi.vel.y = -5; // Jump strength
+      spi.vel.y = -6; // Jump strength
       this.isJumping = true;
       spi.changeAni('jump');
     }
-    
+
     // Transition to fall animation when falling
     if (this.isJumping && spi.vel.y > 0) {
       spi.changeAni('fall');
     }
-    
+
     // Check if the player is on the ground
     if (spi.collides(floor1)) {
       this.isJumping = false; // Reset jumping state
-      spi.changeAni('idle'); // Reset to idle animation when grounded
+spi.changeAni('idle'); // Reset to idle animation when grounded
     }
     
     // Handle attack
@@ -97,7 +96,7 @@ class King {
       spi.changeAni('attack');
     }
     if(mouseIsPressed) {
-      spi.debug = true; // Enable debug mode for the sprite
+      allSprites.debug = true; // Enable debug mode for the sprite
     }
   }
   
