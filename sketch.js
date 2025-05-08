@@ -27,6 +27,7 @@ let lvl1boxstartY ;
 
 
 let player;
+let enemy1lvl1;
 
 function preload() {
   // Load level 1 image
@@ -35,6 +36,9 @@ function preload() {
   // Initialize the player object and call its pre() method
   player = new King();
   player.pre();
+
+  enemy1lvl1 = new Pig();
+  enemy1lvl1.pre();
 }  
 
 function setup() {
@@ -74,6 +78,8 @@ function setup() {
     lvl1bounds.lvl1StartY - (lvl1bounds.lvl1height/2),
     lvl1bounds.lvl1height  
   );
+
+  enemy1lvl1.spid();
 }
 
 function windowResized() {
@@ -108,6 +114,7 @@ function draw() {
 
   // Update and draw the player sprite
   player.doAll();
+  enemy1lvl1.doAll();
 }
 
 
