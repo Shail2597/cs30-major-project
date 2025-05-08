@@ -26,11 +26,11 @@ class Pig {
     }
 
     spid() {
-        floor1 = new Sprite();
-        floor1.y = 433;
-        floor1.w = 870;
-        floor1.h = 1;
-        floor1.collider = STATIC;
+        // floor1 = new Sprite();
+        // floor1.y = 433;
+        // floor1.w = 870;
+        // floor1.h = 1;
+        // floor1.collider = STATIC;
     }
 
     doAll(){

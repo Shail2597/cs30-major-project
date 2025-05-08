@@ -44,13 +44,13 @@ class King {
   spid(x1, y1, x2, x3, y3, x4, y4, y5, x6, x7, y2, y6 ) {  
     // Create the floor sprite
     //floor1 = new Sprite(x1, y1, x2, y2, STATIC);
-    floor1 = new Sprite(x1, y1, x2, 0, STATIC);
+    floor1 = new Sprite(x1, y1 , x2, 0, STATIC);
     left_wall = new Sprite(x6-34, y2, 0, y6, STATIC);
     right_wall = new Sprite(x7+34, y2, 0, y6, STATIC);
     box_vertical = new Sprite(x3-34, y3, 0, y4, STATIC);
     box_horizontal = new Sprite(x3-34, y5, x4, 0, STATIC);
     
-    // Set the properties of the floor sprite
+    //Set the properties of the floor sprite
     // floor1.visible = false;
     // left_wall.visible = false;
     // right_wall.visible = false;
@@ -65,7 +65,6 @@ class King {
       spi.mirror.x = false; // Face right (no mirroring)
       spi.changeAni('run');
     } else if (keyIsDown(LEFT_ARROW)) {
-      spi.vel.x = -6;
       spi.vel.x = -6;
       spi.mirror.x = true; // Face left (mirroring)
       spi.changeAni('run');
@@ -103,7 +102,7 @@ spi.changeAni('idle'); // Reset to idle animation when grounded
   doAll() {
     // Handle input
     this.handleInput();
-    //spi.scale = 1.5; // Adjust the scale factor as needed
+    spi.scale = 1.5; // Adjust the scale factor as needed
 
     // Update and draw the player sprite
     spi.update();
