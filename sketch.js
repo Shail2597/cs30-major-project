@@ -45,19 +45,8 @@ function setup() {
   // Create the canvas
   createCanvas(windowWidth, windowHeight);
   
-  // Update level boundaries
-  lvl1bounds = {
-    lvl1width : 797,
-    lvl1height : 143,
-    lvl1boxwidth : 75 ,
-    lvl1boxheight : 63.5
-  };
-  lvl1bounds.lvl1StartX = width / 2;
-  lvl1bounds.lvl1StartY = ((height - lvl1bounds.lvl1height) / 2) + lvl1bounds.lvl1height;
-  lvl1bounds.lvl1boxstartX = lvl1bounds.lvl1StartX - (lvl1bounds.lvl1width / 2);
-  lvl1bounds.lvl1boxendX = lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1boxwidth;
-  lvl1bounds.lvl1boxstartY = lvl1bounds.lvl1StartY - lvl1bounds.lvl1boxheight;
 
+  calculatelvl1Bounds();
 
   // Calculate offsets for level 1
   calculateLvl1Offsets();
@@ -65,21 +54,6 @@ function setup() {
   // Initialize physics world
   world.gravity.y = 11;
   // Initialize the floor
-  player.spid(lvl1bounds.lvl1StartX, 
-    lvl1bounds.lvl1StartY, 
-    lvl1bounds.lvl1width, 
-    lvl1bounds.lvl1boxendX, 
-    lvl1bounds.lvl1boxstartY + lvl1bounds.lvl1boxheight / 2, 
-    lvl1bounds.lvl1boxwidth,
-    lvl1bounds.lvl1boxheight,
-    lvl1bounds.lvl1boxstartY, 
-    lvl1bounds.lvl1boxstartX,
-    lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1width,
-    lvl1bounds.lvl1StartY - (lvl1bounds.lvl1height/2),
-    lvl1bounds.lvl1height  
-  );
-
-  enemy1lvl1.spid();
 }
 
 function windowResized() {
@@ -90,6 +64,7 @@ function windowResized() {
   // Update level boundaries
   lvl1StartX = width / 2;
   lvl1StartY = (height - lvl1height) / 2;
+  calculatelvl1Bounds();
 
 }
 function calculateLvl1Offsets() {
@@ -117,4 +92,32 @@ function draw() {
   enemy1lvl1.doAll();
 }
 
+function calculatelvl1Bounds(){
+  lvl1bounds = {
+    lvl1width : 797,
+    lvl1height : 143,
+    lvl1boxwidth : 75 ,
+    lvl1boxheight : 63.5
+  };
+  lvl1bounds.lvl1StartX = width / 2;
+  lvl1bounds.lvl1StartY = ((height - lvl1bounds.lvl1height) / 2) + lvl1bounds.lvl1height;
+  lvl1bounds.lvl1boxstartX = lvl1bounds.lvl1StartX - (lvl1bounds.lvl1width / 2);
+  lvl1bounds.lvl1boxendX = lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1boxwidth;
+  lvl1bounds.lvl1boxstartY = lvl1bounds.lvl1StartY - lvl1bounds.lvl1boxheight;
 
+  player.spawnWalls(
+    lvl1bounds.lvl1StartX,
+    lvl1bounds.lvl1StartY,
+    lvl1bounds.lvl1width,
+    lvl1bounds.lvl1boxendX,
+    lvl1bounds.lvl1boxstartY + lvl1bounds.lvl1boxheight / 2,
+    lvl1bounds.lvl1boxwidth,
+    lvl1bounds.lvl1boxheight,
+    lvl1bounds.lvl1boxstartY, 
+    lvl1bounds.lvl1boxstartX,
+    lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1width,
+    lvl1bounds.lvl1StartY - (lvl1bounds.lvl1height/2),
+    lvl1bounds.lvl1height  
+  );
+  enemy1lvl1.spid();
+}
