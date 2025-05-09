@@ -6,6 +6,7 @@ let box_vertical;
 let box_horizontal;
 let left_wall;
 let right_wall;
+let hitBox;
 
 
 
@@ -17,7 +18,8 @@ class King {
 
   pre() {
     // Create the player sprite
-    spi = new Sprite(windowWidth / 2, windowHeight / 2, 78, 58);
+    hitBox = new Sprite(windowWidth / 2, windowHeight / 2, 45, 53);
+    spi = new Sprite(hitBox.x, hitBox.y, 78, 58);
     spi.spriteSheet = 'assets/king_human_full.png';
 
     // Add animations for the player
@@ -39,15 +41,17 @@ class King {
     spi.anis.offset.y = 15; // Adjust the offset for the sprite
     allSprites.pixelPerfect = true; // Enable pixel-perfect collision detection
     spi.rotationLock = true; // Lock the rotation of the sprite
+    spi.collider = "NONE";
+    hitBox.rotationLock = true; // Lock the rotation of the hitbox
   }
   
   spid(x1, y1, x2, x3, y3, x4, y4, y5, x6, x7, y2, y6 ) {  
     // Create the floor sprite
     //floor1 = new Sprite(x1, y1, x2, y2, STATIC);
     floor1 = new Sprite(x1, y1, x2, 0, STATIC);
-    left_wall = new Sprite(x6-34, y2, 0, y6, STATIC);
-    right_wall = new Sprite(x7+34, y2, 0, y6, STATIC);
-    box_vertical = new Sprite(x3-34, y3, 0, y4, STATIC);
+    left_wall = new Sprite(x6, y2, 0, y6, STATIC);
+    right_wall = new Sprite(x7, y2, 0, y6, STATIC);
+    box_vertical = new Sprite(x3, y3, 0, y4, STATIC);
     box_horizontal = new Sprite(x3-34, y5, x4, 0, STATIC);
     
     // Set the properties of the floor sprite
@@ -61,34 +65,37 @@ class King {
   handleInput() {
     // Handle horizontal movement
     if (keyIsDown(RIGHT_ARROW)) {
-      spi.vel.x = 6;
+      hitBox.vel.x = 6;
+      hitBox.mirror.x = false; // Face right (no mirroring)
       spi.mirror.x = false; // Face right (no mirroring)
       spi.changeAni('run');
     } else if (keyIsDown(LEFT_ARROW)) {
-      spi.vel.x = -6;
-      spi.vel.x = -6;
+      //spi.vel.x = -6;
+      hitBox.vel.x = -6;
       spi.mirror.x = true; // Face left (mirroring)
       spi.changeAni('run');
     } else {
-      spi.vel.x = 0;
+      hitBox.vel.x = 0;
       spi.changeAni('idle');
     }
     
     if (keyIsDown(UP_ARROW) && !this.isJumping) {
-      spi.vel.y = -6; // Jump strength
+      hitBox.vel.y = -6; // Jump strength
       this.isJumping = true;
+    }
+    if (hitBox.vel.y < 0) {
       spi.changeAni('jump');
     }
 
     // Transition to fall animation when falling
-    if (this.isJumping && spi.vel.y > 0) {
+    if (this.isJumping && hitBox.vel.y > 0) {
       spi.changeAni('fall');
     }
 
     // Check if the player is on the ground
-    if (spi.collides(floor1)) {
+    if (hitBox.collides(floor1)) {
       this.isJumping = false; // Reset jumping state
-spi.changeAni('idle'); // Reset to idle animation when grounded
+      spi.changeAni('idle'); // Reset to idle animation when grounded
     }
     
     // Handle attack
@@ -104,10 +111,20 @@ spi.changeAni('idle'); // Reset to idle animation when grounded
     // Handle input
     this.handleInput();
     //spi.scale = 1.5; // Adjust the scale factor as needed
+    hitBox.visible = false; // Hide the hitbox sprite
+
+    if (spi.mirror.x) {
+      spi.position.x = hitBox.position.x - 18; // Center the sprite on the hitbox
+    spi.position.y = hitBox.position.y - 24;
+    }
+    else {
+      spi.position.x = hitBox.position.x + 18; // Center the sprite on the hitbox
+      spi.position.y = hitBox.position.y - 24;
+    }
 
     // Update and draw the player sprite
     spi.update();
     spi.draw();
-
+    spi.scale = 1.7; // Adjust the scale factor as needed
   }
 }
