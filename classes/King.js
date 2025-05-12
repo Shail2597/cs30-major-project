@@ -2,6 +2,7 @@
 let spi;
 let floor1;
 let x1, y1, x2, y2, x3, y3, x4, y5, x6, x7, x8, x9, x10;
+let walls;
 let box_vertical;
 let box_horizontal;
 let left_wall;
@@ -20,6 +21,7 @@ class King {
     // Create the player sprite
     hitBox = new Sprite(windowWidth / 2, windowHeight / 2, 45, 53);
     spi = new Sprite(hitBox.x, hitBox.y, 78, 58);
+    walls = new Group();
     spi.spriteSheet = 'assets/king_human_full.png';
 
     // Add animations for the player
@@ -44,22 +46,15 @@ class King {
     spi.collider = "NONE";
     hitBox.rotationLock = true; // Lock the rotation of the hitbox
   }
-  
-  spid(x1, y1, x2, x3, y3, x4, y4, y5, x6, x7, y2, y6 ) {  
-    // Create the floor sprite
-    //floor1 = new Sprite(x1, y1, x2, y2, STATIC);
-    floor1 = new Sprite(x1, y1, x2, 0, STATIC);
-    left_wall = new Sprite(x6, y2, 0, y6, STATIC);
-    right_wall = new Sprite(x7, y2, 0, y6, STATIC);
-    box_vertical = new Sprite(x3, y3, 0, y4, STATIC);
-    box_horizontal = new Sprite(x3-34, y5, x4, 0, STATIC);
-    
-    // Set the properties of the floor sprite
-    // floor1.visible = false;
-    // left_wall.visible = false;
-    // right_wall.visible = false;
-    // box_vertical.visible = false;
-    // box_horizontal.visible = false;
+
+  spawnWalls(x1, y1, x2, x3, y3, x4, y4, y5, x6, x7, y2, y6) {
+    walls.removeAll(); // Clear previous walls
+    // Initialize the colliders directly as part of the walls group
+    floor1 = walls.add(new Sprite(x1, y1, x2, 0, STATIC));
+    left_wall = walls.add(new Sprite(x6, y2, 0, y6, STATIC));
+    right_wall = walls.add(new Sprite(x7, y2, 0, y6, STATIC));
+    box_vertical = walls.add(new Sprite(x3, y3, 0, y4, STATIC));
+    box_horizontal = walls.add(new Sprite(x3 - 34, y5, x4, 0, STATIC));
   }
   
   handleInput() {
@@ -93,7 +88,7 @@ class King {
     }
 
     // Check if the player is on the ground
-    if (hitBox.collides(floor1)) {
+    if (hitBox.collides(walls)) {
       this.isJumping = false; // Reset jumping state
       spi.changeAni('idle'); // Reset to idle animation when grounded
     }
