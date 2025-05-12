@@ -22,15 +22,12 @@ class Pig {
 
     pigSpi.changeAni('idle');
     pigSpi.anis.offSet.y = 7.5;
-    allSprite.pixelPerfect = false;
+    allSprite.pixelPerfect = true;
+    pigSpi.rotationLock = true;
     }
 
     spid() {
-        // floor1 = new Sprite();
-        // floor1.y = 433;
-        // floor1.w = 870;
-        // floor1.h = 1;
-        // floor1.collider = STATIC;
+
     }
 
     doAll(){
