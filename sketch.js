@@ -79,7 +79,6 @@ function setup() {
     lvl1bounds.lvl1height  
   );
 
-  enemy1lvl1.spid();
 }
 
 function windowResized() {
@@ -116,5 +115,3 @@ function draw() {
   player.doAll();
   enemy1lvl1.doAll();
 }
-
-
