@@ -60,9 +60,9 @@ class King {
     if (lev === 1) {
     floor1 = walls.add(new Sprite(x, y, x2, 0, STATIC));
     ceiling = ceil.add(new Sprite(x, y7 - 52 , x2, 0, STATIC));
-    left_wall = walls.add(new Sprite(x6, y2, 0, y6, STATIC));
-    right_wall = walls.add(new Sprite(x7, y2, 0, y6, STATIC));
-    box_vertical = walls.add(new Sprite(x3, y3, 0, y4, STATIC));
+    left_wall = ceil.add(new Sprite(x6, y2, 0, y6, STATIC));
+    right_wall = ceil.add(new Sprite(x7, y2, 0, y6, STATIC));
+    box_vertical = ceil.add(new Sprite(x3, y3, 0, y4, STATIC));
     box_horizontal = walls.add(new Sprite(x3 - 34, y5, x4, 0, STATIC));
     walls.visible = false; // Hide the walls
     ceil.visible = false; // Hide the ceiling
