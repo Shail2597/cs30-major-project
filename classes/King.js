@@ -58,14 +58,14 @@ class King {
     ceil.removeAll(); // Clear previous ceilings
     // Initialize the colliders directly as part of the walls group
     if (lev === 1) {
-    floor1 = walls.add(new Sprite(x, y, x2, 0, STATIC));
-    ceiling = ceil.add(new Sprite(x, y7 - 52 , x2, 0, STATIC));
-    left_wall = ceil.add(new Sprite(x6, y2, 0, y6, STATIC));
-    right_wall = ceil.add(new Sprite(x7, y2, 0, y6, STATIC));
-    box_vertical = ceil.add(new Sprite(x3, y3, 0, y4, STATIC));
-    box_horizontal = walls.add(new Sprite(x3 - 34, y5, x4, 0, STATIC));
-    walls.visible = false; // Hide the walls
-    ceil.visible = false; // Hide the ceiling
+      floor1 = walls.add(new Sprite(x, y, x2, 0, STATIC));
+      ceiling = ceil.add(new Sprite(x, y7 - 52 , x2, 0, STATIC));
+      left_wall = ceil.add(new Sprite(x6, y2, 0, y6, STATIC));
+      right_wall = ceil.add(new Sprite(x7, y2, 0, y6, STATIC));
+      box_vertical = ceil.add(new Sprite(x3, y3, 0, y4, STATIC));
+      box_horizontal = walls.add(new Sprite(x3 - 34, y5, x4, 0, STATIC));
+      walls.visible = false; // Hide the walls
+      ceil.visible = false; // Hide the ceiling
     }
     else if (lev === 2) {
       console.log("Level 2 Sprite Position:", x, y);
@@ -105,12 +105,14 @@ class King {
       hitBox.mirror.x = false; // Face right (no mirroring)
       spi.mirror.x = false; // Face right (no mirroring)
       spi.changeAni('run');
-    } else if (keyIsDown(LEFT_ARROW)) {
+    }
+    else if (keyIsDown(LEFT_ARROW)) {
       //spi.vel.x = -6;
       hitBox.vel.x = -6;
       spi.mirror.x = true; // Face left (mirroring)
       spi.changeAni('run');
-    } else {
+    }
+    else {
       hitBox.vel.x = 0;
       spi.changeAni('idle');
     }
@@ -146,7 +148,7 @@ class King {
 
     if (spi.mirror.x) {
       spi.position.x = hitBox.position.x - 18; // Center the sprite on the hitbox
-    spi.position.y = hitBox.position.y - 24;
+      spi.position.y = hitBox.position.y - 24;
     }
     else {
       spi.position.x = hitBox.position.x + 18; // Center the sprite on the hitbox

@@ -8,6 +8,7 @@
 let level = 1;
 
 let lvl1Image;
+let lvl1door;
 let lvl1XOffset, lvl1YOffset;
 
 let lvl2Image;
@@ -21,7 +22,7 @@ let lvl1bounds = {
   lvl1height : 143,
   lvl1boxwidth : 75 ,
   lvl1boxheight : 63.5
-}
+};
 
 let lvl1StartX, lvl1StartY;
 let lvl1width = 797;
@@ -45,6 +46,8 @@ function preload() {
   lvl2Image = loadImage("assets/lvl 2.png");
 
   // Initialize the player object and call its pre() method
+  lvl1door = new Door();
+  lvl1door.pre(100,100)
   player = new King();
   player.pre();
 
@@ -105,7 +108,8 @@ function draw() {
     }
 
     // Update and draw the player sprite
-  } else if (level === 2) {
+  }
+  else if (level === 2) {
     // Draw level 2 image
     if (lvl2Image) {
       image(lvl2Image, lvl2XOffset, lvl2YOffset);
@@ -120,7 +124,8 @@ function keyPressed() {
   if (key === '1') {
     level = 1; // Switch to level 1
     calculatelvl1Bounds();
-  } else if (key === '2') {
+  }
+  else if (key === '2') {
     level = 2; // Switch to level 2
     calculatelvl1Bounds();
 
@@ -130,43 +135,43 @@ function keyPressed() {
 
 function calculatelvl1Bounds(){
   if (level === 1) {
-  lvl1bounds = {
-    lvl1width : 797,
-    lvl1height : 143,
-    lvl1boxwidth : 75 ,
-    lvl1boxheight : 63.5
-  };
-  lvl1bounds.lvl1StartX = width / 2;
-  lvl1bounds.lvl1StartY = ((height - lvl1bounds.lvl1height) / 2) + lvl1bounds.lvl1height;
-  lvl1bounds.lvl1boxstartX = lvl1bounds.lvl1StartX - (lvl1bounds.lvl1width / 2);
-  lvl1bounds.lvl1boxendX = lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1boxwidth;
-  lvl1bounds.lvl1boxstartY = lvl1bounds.lvl1StartY - lvl1bounds.lvl1boxheight;
+    lvl1bounds = {
+      lvl1width : 797,
+      lvl1height : 143,
+      lvl1boxwidth : 75 ,
+      lvl1boxheight : 63.5
+    };
+    lvl1bounds.lvl1StartX = width / 2;
+    lvl1bounds.lvl1StartY = (height - lvl1bounds.lvl1height) / 2 + lvl1bounds.lvl1height;
+    lvl1bounds.lvl1boxstartX = lvl1bounds.lvl1StartX - lvl1bounds.lvl1width / 2;
+    lvl1bounds.lvl1boxendX = lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1boxwidth;
+    lvl1bounds.lvl1boxstartY = lvl1bounds.lvl1StartY - lvl1bounds.lvl1boxheight;
 
-  player.spawnWalls(
-    level,
-    lvl1bounds.lvl1StartX,
-    lvl1bounds.lvl1StartY,
-    lvl1bounds.lvl1width,
-    lvl1bounds.lvl1boxendX,
-    lvl1bounds.lvl1boxstartY + lvl1bounds.lvl1boxheight / 2,
-    lvl1bounds.lvl1boxwidth,
-    lvl1bounds.lvl1boxheight,
-    lvl1bounds.lvl1boxstartY, 
-    lvl1bounds.lvl1boxstartX,
-    lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1width,
-    lvl1bounds.lvl1StartY - (lvl1bounds.lvl1height/2),
-    lvl1bounds.lvl1height + 100,
-    lvl1bounds.lvl1StartY - lvl1bounds.lvl1height
-  );
-  enemy1lvl1.spid();
-}
-else if (level === 2) {
-  lvl2StartX = (width - lvl2width) / 2;
-  lvl2StartY = ((height - lvl2height) / 2) + 50;
-  player.spawnWalls(
-    level,
-    lvl2StartX,
-    lvl2StartY
-  )
-}
+    player.spawnWalls(
+      level,
+      lvl1bounds.lvl1StartX,
+      lvl1bounds.lvl1StartY,
+      lvl1bounds.lvl1width,
+      lvl1bounds.lvl1boxendX,
+      lvl1bounds.lvl1boxstartY + lvl1bounds.lvl1boxheight / 2,
+      lvl1bounds.lvl1boxwidth,
+      lvl1bounds.lvl1boxheight,
+      lvl1bounds.lvl1boxstartY, 
+      lvl1bounds.lvl1boxstartX,
+      lvl1bounds.lvl1boxstartX + lvl1bounds.lvl1width,
+      lvl1bounds.lvl1StartY - lvl1bounds.lvl1height/2,
+      lvl1bounds.lvl1height + 100,
+      lvl1bounds.lvl1StartY - lvl1bounds.lvl1height
+    );
+    enemy1lvl1.spid();
+  }
+  else if (level === 2) {
+    lvl2StartX = (width - lvl2width) / 2;
+    lvl2StartY = (height - lvl2height) / 2 + 50;
+    player.spawnWalls(
+      level,
+      lvl2StartX,
+      lvl2StartY
+    );
+  }
 }
