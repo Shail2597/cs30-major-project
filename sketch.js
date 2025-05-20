@@ -45,9 +45,6 @@ function preload() {
   // Load level 2 image
   lvl2Image = loadImage("assets/lvl 2.png");
 
-  // Initialize the player object and call its pre() method
-  lvl1door = new Door();
-  lvl1door.pre();
   player = new King();
   player.pre();
 
@@ -117,7 +114,6 @@ function draw() {
       image(lvl2Image, lvl2XOffset, lvl2YOffset);
     }
   }
-  lvl1door.show(lvl1StartX + lvl1width/2,lvl1StartY);
   player.doAll();
   enemy1lvl1.doAll();
   console.log(mouseX, mouseY);
