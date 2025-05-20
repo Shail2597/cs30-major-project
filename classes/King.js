@@ -1,5 +1,5 @@
 // Create the player object with properties
-let spi;
+let spi ;
 let floor1;
 let ceiling;
 let walls;
@@ -9,8 +9,6 @@ let box_horizontal;
 let left_wall;
 let right_wall;
 let hitBox;
-//let x = 60;
-//let y = 276;
 
 
 

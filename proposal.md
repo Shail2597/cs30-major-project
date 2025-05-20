@@ -11,8 +11,7 @@ Building a 2D Game(maybe a platformer)
 - Efficient collision detection system
 - Checkpoint system
 - Different Levels
-    - 2 Different Worlds
-        - 4 Levels Each
+    - More than 4 Levels (Since we scraped the 2 world idea into the 1 world but incresing levels to compensate for that)
 - Fighting Mechanism
 - Different Animations
 - Start, Pause, End Screen

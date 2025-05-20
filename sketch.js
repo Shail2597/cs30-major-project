@@ -47,7 +47,7 @@ function preload() {
 
   // Initialize the player object and call its pre() method
   lvl1door = new Door();
-  lvl1door.pre(100,100)
+  lvl1door.pre();
   player = new King();
   player.pre();
 
@@ -58,6 +58,8 @@ function preload() {
 function setup() {
   // Create the canvas
   createCanvas(windowWidth, windowHeight);
+  lvl1StartX = width / 2;
+  lvl1StartY = (height - lvl1height) / 2 + lvl1height;
 
   // Calculate offsets for level 1 and level 2
   calculateLvl1Offsets();
@@ -78,7 +80,7 @@ function windowResized() {
 
   // Update level 1 boundaries
   lvl1StartX = width / 2;
-  lvl1StartY = (height - lvl1height) / 2;
+  lvl1StartY = (height - lvl1height) / 2 + lvl1height;
   calculatelvl1Bounds();
 }
 
@@ -115,6 +117,7 @@ function draw() {
       image(lvl2Image, lvl2XOffset, lvl2YOffset);
     }
   }
+  lvl1door.show(lvl1StartX + lvl1width/2,lvl1StartY);
   player.doAll();
   enemy1lvl1.doAll();
   console.log(mouseX, mouseY);
