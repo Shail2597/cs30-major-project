@@ -65,6 +65,8 @@ class King {
       walls.visible = false; // Hide the walls
       ceil.visible = false; // Hide the ceiling
     }
+
+    
     else if (lev === 2) {
       console.log("Level 2 Sprite Position:", x, y);
       lvl2 = walls.add(new Sprite([
