@@ -4,12 +4,19 @@ const cols     = 20;
 const rows     = 14;
 const tileSize = 64;
 
+const PLAYER_ATTACK_COOLDOWN = 30; // frames (0.5s at 60fps)
+const PLAYER_ATTACK_RANGE = 50;    // pixels
+
 class King {
   constructor() {
     this.isJumping = false;
     this.hitBox    = null;
     this.spi       = null;
     this.hitBoxJump= null;
+    this.attackCooldown = 0;
+    this.isAttacking = false;
+    this.health = 3; // Example player health
+    this.hitCooldown = 0; // For pig attacks
   }
 
   pre() {
@@ -25,11 +32,11 @@ class King {
       dead:    { row: 1, frames: 4             },
       door_in: { row: 2, frames: 8,  frameDelay: 14 },
       door_out:{ row: 3, frames: 8,  frameDelay: 14 },
-      fall:    { row: 4                    },
-      ground:  { row: 5                    },
+      fall:    { row: 4, frames: 1             },
+      ground:  { row: 5, frames: 1             },
       hit:     { row: 6, frames: 2             },
       idle:    { row: 7, frames:11             },
-      jump:    { row: 8                    },
+      jump:    { row: 8, frames: 1             },
       run:     { row: 9, frames: 8             }
     });
     this.spi.changeAni('idle');
@@ -49,6 +56,7 @@ class King {
 
   respawn() {
     // center of the grid
+    this.isJumping = true;
     const gridW   = cols * tileSize;
     const gridH   = rows * tileSize;
     const offsetX = (width  - gridW) / 2;
@@ -57,9 +65,11 @@ class King {
     this.hitBox.position.x = offsetX + gridW/2;
     this.hitBox.position.y = offsetY + gridH/2;
     this.isJumping = false;
+    this.health = 3;
+    this.hitCooldown = 0;
   }
 
-  handleInput(walls) {
+  handleInput(walls, pig) {
   // Horizontal movement
     if (keyIsDown(RIGHT_ARROW)) {
       this.hitBox.vel.x = 6;
@@ -79,17 +89,17 @@ class King {
 
     // Jumping
     if (keyIsDown(UP_ARROW) && !this.isJumping) {
-      this.hitBox.vel.y = -12; // jump strength
+      this.hitBox.vel.y = -7; // jump strength
       this.isJumping = true;
     }
 
     // Apply gravity
-    this.hitBox.vel.y += GRAVITY;
+    // this.hitBox.vel.y += GRAVITY;
 
     // Limit fall speed
-    if (this.hitBox.vel.y > MAX_FALL_SPEED) {
-      this.hitBox.vel.y = MAX_FALL_SPEED;
-    }
+    // if (this.hitBox.vel.y > MAX_FALL_SPEED) {
+    //   this.hitBox.vel.y = MAX_FALL_SPEED;
+    // }
 
     // Animations
     if (this.hitBox.vel.y < 0) {
@@ -110,9 +120,43 @@ class King {
       this.isJumping = false;
     }
 
-    // Attack
-    if (keyIsDown(32)) {
+    // --- PLAYER ATTACK LOGIC WITH COOLDOWN ---
+    if (this.attackCooldown > 0) this.attackCooldown--;
+    if (this.hitCooldown > 0) this.hitCooldown--;
+
+    if (keyIsDown(32) && this.attackCooldown === 0) { // Space bar
       this.spi.changeAni('attack');
+      this.isAttacking = true;
+      this.attackCooldown = PLAYER_ATTACK_COOLDOWN;
+
+      // Check if pig is in range and alive
+      if (pig && !pig.dead) {
+        const dx = pig.getX() - this.hitBox.x;
+        const dy = pig.getY() - this.hitBox.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < PLAYER_ATTACK_RANGE) {
+          pig.takeHit();
+        }
+      }
+    } else {
+      this.isAttacking = false;
+    }
+
+    // --- HANDLE PIG ATTACKING PLAYER ---
+    if (pig && pig.isAttacking && this.hitCooldown === 0 && !pig.dead) {
+      // Check if pig is close enough to hit player
+      const dx = pig.getX() - this.hitBox.x;
+      const dy = pig.getY() - this.hitBox.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < PIG_ATTACK_RANGE) {
+        this.health--;
+        this.spi.changeAni('hit');
+        this.hitCooldown = 30; // brief invulnerability
+        if (this.health <= 0) {
+          this.spi.changeAni('dead');
+          // Optionally: handle player death
+        }
+      }
     }
 
     if (mouseIsPressed) {
@@ -136,14 +180,14 @@ class King {
     }
   }
 
+  // Helper for pig to get player position
+  getX() { return this.hitBox.x; }
+  getY() { return this.hitBox.y; }
 
-  doAll(walls) {
-    this.handleInput(walls);
+  doAll(walls, pig) {
+    this.handleInput(walls, pig);
     this.spi.update();
     this.spi.draw();
-    // console.log(this.spi.position.x, this.spi.position.y);
-    // console.log(this.spi.ani);
-    console.log(this.isJumping);
     this.spi.scale = 2;
   }
 }

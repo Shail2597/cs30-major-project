@@ -21,6 +21,7 @@ class MapLoader {
     this.fileInput = null;
     this.player = new King();
     this.walls = new Group();
+    this.pig = null; // Pig will only be created after map is loaded
   }
 
   preload() {
@@ -40,13 +41,16 @@ class MapLoader {
       this.images[p] = loadImage(p);
     }
     this.player.pre();
+    // Do NOT preload pig here
   }
 
-  setup() {
+  setup(){
+    world.gravity.y = 9; // Set gravity for the game
     createCanvas(windowWidth, windowHeight);
     noSmooth();
 
     this.player.respawn();
+    // Do NOT respawn pig here
 
     this.fileInput = createFileInput(file => this.handleFile(file));
     this.fileInput.hide();
@@ -68,7 +72,11 @@ class MapLoader {
     this.drawGrid();
     pop();
 
-    this.player.doAll(this.walls);
+    // Only draw pig if it exists (after map is loaded)
+    if (this.pig) {
+      this.pig.doAll(this.player.getX(), this.player.getY(), this.player);
+    }
+    this.player.doAll(this.walls, this.pig);
   }
 
   drawGrid() {
@@ -76,7 +84,7 @@ class MapLoader {
     fill(255);
     rect(0, 0, this.cols * this.tileSize, this.rows * this.tileSize);
 
-    imageMode(CORNER); // <== this is the key fix
+    imageMode(CORNER);
 
     // base
     for (let y = 0; y < this.rows; y++) {
@@ -109,7 +117,6 @@ class MapLoader {
     }
   }
 
-
   handleFile(file) {
     if (!file || !file.data) {
       return;
@@ -139,8 +146,12 @@ class MapLoader {
 
       this.buildWallColliders();
       this.player.respawn();
-      console.log('Map loaded successfully!');
 
+      // --- SPAWN AND INIT PIG HERE ---
+      this.pig = new Pig();
+      this.pig.pre();
+
+      console.log('Map loaded successfully!');
     }
     catch (err) {
       alert('Invalid map file: ' + err.message);
