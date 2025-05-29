@@ -25,11 +25,11 @@ class Pig {
     pigSpi    = new Sprite(hitBoxPig.x, hitBoxPig.y, 34, 28);
     pigSpi.spriteSheet = 'asset/pig.png';
     pigSpi.addAnis({
-      death:  { row: 0, frames: 4 },
+      death:  { row: 0, frames: 4, frameDelay: 8 }, // Added frameDelay for death animation
       fall:   { row: 1 },
       ground: { row: 2 },
       hit:    { row: 3, frames: 2 },
-      idle:   { row: 4, frames: 11 },
+      idle:   { row: 4, frames: 11 , frameDelay: 6 },
       jump:   { row: 5, frames: 1 },
       run:    { row: 6, frames: 6 },
       attack: { row: 7, frames: 5 },
@@ -129,13 +129,16 @@ class Pig {
   handleAnimations() {
     if (this.dead) return;
 
-    // Set mirror
-    if (hitBoxPig.vel.x > 0) pigSpi.mirror.x = false;
-    if (hitBoxPig.vel.x < 0) pigSpi.mirror.x = true;
+    // Set mirror based on direction only if moving
+    if (hitBoxPig.vel.x > 0.1) {
+      pigSpi.mirror.x = true; // Facing right (swap to true)
+    } else if (hitBoxPig.vel.x < -0.1) {
+      pigSpi.mirror.x = false; // Facing left (swap to false)
+    }
 
     // Only change animation if needed
     if (this.isAttacking) {
-      if (pigSpi.ani?.name !== 'attack') {
+      if (pigSpi.ani?.name !== 'attack' || pigSpi.ani.frame === pigSpi.ani.lastFrame) {
         pigSpi.changeAni('attack');
       }
     } else if (this.activated) {
@@ -161,7 +164,7 @@ class Pig {
     this.colliderAndhitBox();
     pigSpi.update();
     pigSpi.draw();
-    pigSpi.scale = 1.7;
+    //pigSpi.scale = 1.7;
   }
 
   // --- Add these methods for King to call ---

@@ -28,16 +28,16 @@ class King {
     // Assign spritesheet and animations
     this.spi.spriteSheet = 'asset/king_human_full.png';
     this.spi.addAnis({
-      attack:  { row: 0, frames: 3,  frameDelay: 6  },
-      dead:    { row: 1, frames: 4             },
-      door_in: { row: 2, frames: 8,  frameDelay: 14 },
-      door_out:{ row: 3, frames: 8,  frameDelay: 14 },
-      fall:    { row: 4, frames: 1             },
-      ground:  { row: 5, frames: 1             },
-      hit:     { row: 6, frames: 2             },
-      idle:    { row: 7, frames:11             },
-      jump:    { row: 8, frames: 1             },
-      run:     { row: 9, frames: 8             }
+      attack:  { row: 0, frames: 3,  frameDelay: 20  },   // was 12
+      dead:    { row: 1, frames: 4,  frameDelay: 18  },   // added delay
+      door_in: { row: 2, frames: 8,  frameDelay: 22  },   // was 14
+      door_out:{ row: 3, frames: 8,  frameDelay: 22  },   // was 14
+      fall:    { row: 4, frames: 1,  frameDelay: 12  },   // added delay
+      ground:  { row: 5, frames: 1,  frameDelay: 12  },   // added delay
+      hit:     { row: 6, frames: 2,  frameDelay: 16  },   // added delay
+      idle:    { row: 7, frames:11,  frameDelay: 12  },   // was 6
+      jump:    { row: 8, frames: 1,  frameDelay: 12  },   // added delay
+      run:     { row: 9, frames: 8,  frameDelay: 12  }    // was 6
     });
     this.spi.changeAni('idle');
     this.spi.anis.offset.y = 10;
