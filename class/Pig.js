@@ -20,14 +20,15 @@ class Pig {
   }
 
   pre() {
-    hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 30);
+    // Suppose your frame size is 64x64:
+    hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 28);
     pigSpi    = new Sprite(hitBoxPig.x, hitBoxPig.y, 34, 28);
     pigSpi.spriteSheet = 'asset/pig.png';
     pigSpi.addAnis({
       death:  { row: 0, frames: 4 },
-      fall:   { row: 1 , frames: 1 },
-      ground: { row: 2, frames: 1 },
-      hit:    { row: 3, frames: 1 },
+      fall:   { row: 1 },
+      ground: { row: 2 },
+      hit:    { row: 3, frames: 2 },
       idle:   { row: 4, frames: 11 },
       jump:   { row: 5, frames: 1 },
       run:    { row: 6, frames: 6 },
@@ -37,7 +38,7 @@ class Pig {
     allSprites.pixelPerfect = true;
     hitBoxPig.rotationLock = true;
     pigSpi.rotationLock = true;
-    hitBoxPig.collider = "dynamic"; // Gravity applies now
+    hitBoxPig.collider = "dynamic";
     pigSpi.visible = true;
     hitBoxPig.visible = false;
   }
@@ -66,13 +67,15 @@ class Pig {
         hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
         // Do not set vel.y here, let gravity act
         this.isAttacking = false;
-      } else {
+      }
+      else {
         // In attack range
         hitBoxPig.vel.x = 0;
         // Do not set vel.y here, let gravity act
         this.isAttacking = true;
       }
-    } else {
+    }
+    else {
       // Idle state
       hitBoxPig.vel.x = 0;
       // Do not set vel.y here, let gravity act
@@ -81,7 +84,9 @@ class Pig {
   }
 
   handleAttack(playerObj) {
-    if (this.dead) return;
+    if (this.dead) {
+      return;
+    }
 
     // Pig attack logic (attack only if cooldown is 0)
     if (this.isAttacking && this.attackCooldown <= 0) {
@@ -91,14 +96,20 @@ class Pig {
       this.attackCooldown = PIG_ATTACK_COOLDOWN;
     }
 
-    if (this.attackCooldown > 0) this.attackCooldown--;
+    if (this.attackCooldown > 0) {
+      this.attackCooldown--;
+    }
 
     // Pig hit logic (playerObj should call this when attacking)
-    if (this.hitCooldown > 0) this.hitCooldown--;
+    if (this.hitCooldown > 0) {
+      this.hitCooldown--;
+    }
   }
 
   takeHit() {
-    if (this.dead || this.hitCooldown > 0) return;
+    if (this.dead || this.hitCooldown > 0) {
+      return;
+    }
     this.health--;
     pigSpi.changeAni('hit');
     this.hitCooldown = 20; // brief invulnerability
@@ -111,27 +122,39 @@ class Pig {
 
   colliderAndhitBox() {
     pigSpi.collider = "NONE";
-    pigSpi.position.x = hitBoxPig.position.x + (pigSpi.mirror.x ? 5 : -5);
-    pigSpi.position.y = hitBoxPig.position.y - 9;
+    pigSpi.position.x = hitBoxPig.position.x;
+    pigSpi.position.y = hitBoxPig.position.y;
   }
 
   handleAnimations() {
     if (this.dead) return;
+
+    // Set mirror
     if (hitBoxPig.vel.x > 0) pigSpi.mirror.x = false;
     if (hitBoxPig.vel.x < 0) pigSpi.mirror.x = true;
 
-    // Only change to 'run' if pig is activated and moving horizontally
-    if (!this.isAttacking && !this.dead && this.activated) {
+    // Only change animation if needed
+    if (this.isAttacking) {
+      if (pigSpi.ani?.name !== 'attack') {
+        pigSpi.changeAni('attack');
+      }
+    } else if (this.activated) {
       if (Math.abs(hitBoxPig.vel.x) > 0.1) {
-        if (pigSpi.ani?.name !== 'run') pigSpi.changeAni('run');
+        if (pigSpi.ani?.name !== 'run') {
+          pigSpi.changeAni('run');
+        }
       } else {
-        if (pigSpi.ani?.name !== 'idle') pigSpi.changeAni('idle');
+        if (pigSpi.ani?.name !== 'idle') {
+          pigSpi.changeAni('idle');
+        }
       }
     }
   }
 
   doAll(playerX, playerY, playerObj) {
-    if (!pigSpi) return; // Guard: don't run if not initialized
+    if (!pigSpi) {
+      return;
+    } // Guard: don't run if not initialized
     this.move(playerX, playerY);
     this.handleAttack(playerObj);
     this.handleAnimations();
@@ -142,6 +165,10 @@ class Pig {
   }
 
   // --- Add these methods for King to call ---
-  getX() { return hitBoxPig.x; }
-  getY() { return hitBoxPig.y; }
+  getX() {
+    return hitBoxPig.x; 
+  }
+  getY() {
+    return hitBoxPig.y; 
+  }
 }

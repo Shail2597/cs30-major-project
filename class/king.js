@@ -121,8 +121,12 @@ class King {
     }
 
     // --- PLAYER ATTACK LOGIC WITH COOLDOWN ---
-    if (this.attackCooldown > 0) this.attackCooldown--;
-    if (this.hitCooldown > 0) this.hitCooldown--;
+    if (this.attackCooldown > 0) {
+      this.attackCooldown--;
+    }
+    if (this.hitCooldown > 0) {
+      this.hitCooldown--;
+    }
 
     if (keyIsDown(32) && this.attackCooldown === 0) { // Space bar
       this.spi.changeAni('attack');
@@ -138,7 +142,8 @@ class King {
           pig.takeHit();
         }
       }
-    } else {
+    }
+    else {
       this.isAttacking = false;
     }
 
@@ -181,8 +186,12 @@ class King {
   }
 
   // Helper for pig to get player position
-  getX() { return this.hitBox.x; }
-  getY() { return this.hitBox.y; }
+  getX() {
+    return this.hitBox.x; 
+  }
+  getY() {
+    return this.hitBox.y; 
+  }
 
   doAll(walls, pig) {
     this.handleInput(walls, pig);
