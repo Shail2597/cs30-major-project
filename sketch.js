@@ -12,7 +12,7 @@ function preload() {
     tileSize: 64,
     bgCount: 47,
     wallCount: 47,
-    decCount: 20,
+    decCount: 22,
   });
   mg.preload();
   ml = new MapLoader({
@@ -21,7 +21,7 @@ function preload() {
     tileSize: 64,
     bgCount: 47,
     wallCount: 47,
-    decCount: 20,
+    decCount: 22,
   });
   ml.preload();
 }

@@ -73,8 +73,10 @@ class MapLoader {
     pop();
 
     if (this.player && this.player.hitBox) {
-      if (this.pig) {
-        this.pig.doAll(this.player.getX(), this.player.getY(), this.player);
+      if (this.pigs && this.player?.hitBox) {
+        for (const pig of this.pigs) {
+          pig.doAll(this.player.getX(), this.player.getY(), this.player);
+        }
       }
       this.player.doAll(this.walls, this.pig);
     }
@@ -119,6 +121,9 @@ class MapLoader {
   }
 
   handleFile(file) {
+    const PLAYER_SPAWN_TILE = "blocks/decoration/dec21.png";
+    const PIG_SPAWN_TILE = "blocks/decoration/dec22.png";
+
     if (!file || !file.data) {
       return;
     }
@@ -131,10 +136,12 @@ class MapLoader {
     try {
       const data = typeof file.data === 'string' ? JSON.parse(file.data) : file.data;
 
+      // Validate map structure
       if (!Array.isArray(data.base) || data.base.length !== this.rows ||
           !data.base.every(r => Array.isArray(r) && r.length === this.cols)) {
         throw new Error('Missing or malformed base layer');
       }
+
       this.layers.base = data.base;
 
       if (Array.isArray(data.decoration) && data.decoration.length === this.rows &&
@@ -145,31 +152,88 @@ class MapLoader {
         this.layers.decoration = Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
       }
 
+      // Build wall colliders
       this.buildWallColliders();
-      
-      // create king and pig
+
+      // Scan for special tiles
+      let playerSpawnPos = null;
+      const pigSpawnPositions = [];
+
+      for (let y = 0; y < this.rows; y++) {
+        for (let x = 0; x < this.cols; x++) {
+          const tile = this.layers.decoration[y][x];
+          if (tile === PLAYER_SPAWN_TILE) {
+            playerSpawnPos = { x, y };
+            this.layers.decoration[y][x] = null;
+          }
+          else if (tile === PIG_SPAWN_TILE) {
+            pigSpawnPositions.push({ x, y });
+            this.layers.decoration[y][x] = null;
+          }
+        }
+      }
+
+      // Create King
       this.player = new King();
+      if (!this.kingSpriteSheet) {
+        throw new Error("King sprite sheet not loaded.");
+      }
       this.player.pre(this.kingSpriteSheet);
-      this.player.respawn();
-      this.player.spi.visble = true;
 
-      this.pig = new Pig();
-      this.pig.pre(this.pigSpriteSheet);
-      pigSpi.visible = true;
+      const offsetX = (width - this.cols * this.tileSize) / 2;
+      const offsetY = (height - this.rows * this.tileSize) / 2;
+
+      if (playerSpawnPos) {
+        this.player.hitBox.position.x = offsetX + playerSpawnPos.x * this.tileSize + this.tileSize / 2;
+        this.player.hitBox.position.y = offsetY + playerSpawnPos.y * this.tileSize + this.tileSize / 2;
+      }
+      else {
+        this.player.respawn();
+      }
+
+      this.player.spi.visible = true;
+
+      // Create Pigs
+      this.pigs = [];
+      for (const pos of pigSpawnPositions) {
+        if (!this.pigSpriteSheet) {
+          throw new Error("Pig sprite sheet not loaded.");
+        }
+
+        const pig = new Pig(
+          offsetX + pos.x * this.tileSize + this.tileSize / 2,
+          offsetY + pos.y * this.tileSize + this.tileSize / 2
+        );
+
+        pig.pre(this.pigSpriteSheet);
+        pigSpi.visible = true;
+        this.pigs.push(pig);
+      }
+
+      // Enable gravity
       world.gravity.y = 9;
-
-      
 
       console.log('Map loaded successfully!');
     }
     catch (err) {
       alert('Invalid map file: ' + err.message);
+      console.error(err);
     }
   }
+
 
   buildWallColliders() {
     for (let i = this.walls.length - 1; i >= 0; i--) {
       this.walls[i].remove();
+    }
+    if (this.pigs) {
+      this.pigs.forEach(p => {
+        if (typeof p.remove === "function") {
+          p.remove();
+        }
+      });
+      this.pigs = [];
+      this.player = null;
     }
 
     const gridW = this.cols * this.tileSize;
