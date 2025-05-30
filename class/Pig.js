@@ -19,11 +19,11 @@ class Pig {
     this.spawnY = y;
   }
 
-  pre() {
+  pre(spriteSheet) {
     // Suppose your frame size is 64x64:
     hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 28);
     pigSpi    = new Sprite(hitBoxPig.x, hitBoxPig.y, 34, 28);
-    pigSpi.spriteSheet = 'asset/pig.png';
+    pigSpi.spriteSheet = spriteSheet;
     pigSpi.addAnis({
       death:  { row: 0, frames: 4, frameDelay: 8 }, // Added frameDelay for death animation
       fall:   { row: 1 },
@@ -39,8 +39,8 @@ class Pig {
     hitBoxPig.rotationLock = true;
     pigSpi.rotationLock = true;
     hitBoxPig.collider = "dynamic";
-    pigSpi.visible = true;
-    hitBoxPig.visible = false;
+    pigSpi.visible = false;
+    hitBoxPig.visible = true;
   }
 
   move(playerX, playerY) {
@@ -122,17 +122,20 @@ class Pig {
 
   colliderAndhitBox() {
     pigSpi.collider = "NONE";
-    pigSpi.position.x = hitBoxPig.position.x;
-    pigSpi.position.y = hitBoxPig.position.y;
+    pigSpi.position.x = hitBoxPig.position.x-2;
+    pigSpi.position.y = hitBoxPig.position.y-6.5;
   }
 
   handleAnimations() {
-    if (this.dead) return;
+    if (this.dead) {
+      return;
+    }
 
     // Set mirror based on direction only if moving
     if (hitBoxPig.vel.x > 0.1) {
       pigSpi.mirror.x = true; // Facing right (swap to true)
-    } else if (hitBoxPig.vel.x < -0.1) {
+    }
+    else if (hitBoxPig.vel.x < -0.1) {
       pigSpi.mirror.x = false; // Facing left (swap to false)
     }
 
@@ -141,12 +144,14 @@ class Pig {
       if (pigSpi.ani?.name !== 'attack' || pigSpi.ani.frame === pigSpi.ani.lastFrame) {
         pigSpi.changeAni('attack');
       }
-    } else if (this.activated) {
+    }
+    else if (this.activated) {
       if (Math.abs(hitBoxPig.vel.x) > 0.1) {
         if (pigSpi.ani?.name !== 'run') {
           pigSpi.changeAni('run');
         }
-      } else {
+      }
+      else {
         if (pigSpi.ani?.name !== 'idle') {
           pigSpi.changeAni('idle');
         }
@@ -164,7 +169,7 @@ class Pig {
     this.colliderAndhitBox();
     pigSpi.update();
     pigSpi.draw();
-    //pigSpi.scale = 1.7;
+    pigSpi.scale = 1.7;
   }
 
   // --- Add these methods for King to call ---

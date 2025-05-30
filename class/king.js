@@ -19,14 +19,14 @@ class King {
     this.hitCooldown = 0; // For pig attacks
   }
 
-  pre() {
+  pre(spriteSheet) {
     // Create hitBox and visible sprite
     this.hitBoxJump = new Sprite(0, 0, 20, 1);
     this.hitBox = new Sprite(0, 0, 45, 53);
     this.spi    = new Sprite(0, 0, 78, 58);
 
     // Assign spritesheet and animations
-    this.spi.spriteSheet = 'asset/king_human_full.png';
+    this.spi.spriteSheet = spriteSheet;
     this.spi.addAnis({
       attack:  { row: 0, frames: 3,  frameDelay: 20  },   // was 12
       dead:    { row: 1, frames: 4,  frameDelay: 18  },   // added delay
@@ -50,6 +50,7 @@ class King {
 
     this.hitBox.collider = "dynamic";
     this.hitBoxJump.rotationLock = true;
+    this.spi.visible = false;
 
     allSprites.pixelPerfect = true;
   }
@@ -194,6 +195,9 @@ class King {
   }
 
   doAll(walls, pig) {
+    if (!this.hitBox || !this.spi) {
+      return;
+    }
     this.handleInput(walls, pig);
     this.spi.update();
     this.spi.draw();

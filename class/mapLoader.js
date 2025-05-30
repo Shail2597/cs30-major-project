@@ -40,16 +40,16 @@ class MapLoader {
       this.decPaths.push(p);
       this.images[p] = loadImage(p);
     }
-    this.player.pre();
-    // Do NOT preload pig here
+    this.kingSpriteSheet = loadImage("asset/king_human_full.png");
+    this.pigSpriteSheet = loadImage("asset/pig.png");
   }
 
   setup(){
-    world.gravity.y = 9; // Set gravity for the game
+    //world.gravity.y = 9; // Set gravity for the game
     createCanvas(windowWidth, windowHeight);
     noSmooth();
 
-    this.player.respawn();
+    //this.player.respawn();
     // Do NOT respawn pig here
 
     this.fileInput = createFileInput(file => this.handleFile(file));
@@ -72,11 +72,12 @@ class MapLoader {
     this.drawGrid();
     pop();
 
-    // Only draw pig if it exists (after map is loaded)
-    if (this.pig) {
-      this.pig.doAll(this.player.getX(), this.player.getY(), this.player);
+    if (this.player && this.player.hitBox) {
+      if (this.pig) {
+        this.pig.doAll(this.player.getX(), this.player.getY(), this.player);
+      }
+      this.player.doAll(this.walls, this.pig);
     }
-    this.player.doAll(this.walls, this.pig);
   }
 
   drawGrid() {
@@ -145,11 +146,19 @@ class MapLoader {
       }
 
       this.buildWallColliders();
+      
+      // create king and pig
+      this.player = new King();
+      this.player.pre(this.kingSpriteSheet);
       this.player.respawn();
+      this.player.spi.visble = true;
 
-      // --- SPAWN AND INIT PIG HERE ---
       this.pig = new Pig();
-      this.pig.pre();
+      this.pig.pre(this.pigSpriteSheet);
+      pigSpi.visible = true;
+      world.gravity.y = 9;
+
+      
 
       console.log('Map loaded successfully!');
     }
@@ -159,7 +168,9 @@ class MapLoader {
   }
 
   buildWallColliders() {
-    this.walls.forEach(s => s.remove());
+    for (let i = this.walls.length - 1; i >= 0; i--) {
+      this.walls[i].remove();
+    }
 
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
