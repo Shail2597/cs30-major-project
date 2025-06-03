@@ -17,27 +17,28 @@ class King {
     this.isAttacking = false;
     this.health = 3; // Example player health
     this.hitCooldown = 0; // For pig attacks
+    this.attackTimer = 0;
   }
 
   pre(spriteSheet) {
     // Create hitBox and visible sprite
-    this.hitBoxJump = new Sprite(0, 0, 20, 1);
+    this.hitBoxJump = new Sprite(0, 0, 40, 12); // wider and a bit thicker
     this.hitBox = new Sprite(0, 0, 45, 53);
     this.spi    = new Sprite(0, 0, 78, 58);
 
     // Assign spritesheet and animations
     this.spi.spriteSheet = spriteSheet;
     this.spi.addAnis({
-      attack:  { row: 0, frames: 3,  frameDelay: 20  },   // was 12
-      dead:    { row: 1, frames: 4,  frameDelay: 18  },   // added delay
-      door_in: { row: 2, frames: 8,  frameDelay: 22  },   // was 14
-      door_out:{ row: 3, frames: 8,  frameDelay: 22  },   // was 14
-      fall:    { row: 4, frames: 1,  frameDelay: 12  },   // added delay
-      ground:  { row: 5, frames: 1,  frameDelay: 12  },   // added delay
-      hit:     { row: 6, frames: 2,  frameDelay: 16  },   // added delay
-      idle:    { row: 7, frames:11,  frameDelay: 12  },   // was 6
-      jump:    { row: 8, frames: 1,  frameDelay: 12  },   // added delay
-      run:     { row: 9, frames: 8,  frameDelay: 12  }    // was 6
+      attack: { row: 0, frames: 3, frameDelay: 6},
+      dead: { row: 1, frames: 4 },
+      door_in: { row: 2, frames: 8, frameDelay: 14 },
+      door_out: { row: 3, frames: 8, frameDelay: 14 },
+      fall: { row: 4 },
+      ground: { row: 5 },
+      hit: { row: 6, frames: 2 },
+      idle: { row: 7, frames: 11 },
+      jump: { row: 8 },
+      run: { row: 9, frames: 8 },
     });
     this.spi.changeAni('idle');
     this.spi.anis.offset.y = 10;
@@ -46,13 +47,16 @@ class King {
     
 
     this.hitBox.rotationLock = true;
-    this.hitBox.visible      = false;
-
-    this.hitBox.collider = "dynamic";
+    this.hitBox.visible      = true;
+    this.hitBoxJump.visible  = true;
     this.hitBoxJump.rotationLock = true;
-    this.spi.visible = false;
+    this.hitBoxJump.collider = "NONE"; // Use KINEMATIC for jump hitbox
+    //this.hitBoxJump.addSensor(0, 0, 40, 12); // Wider and a bit thicker for jump hitbox
+    this.hitBox.collider = "DYNAMIC"; // Use DYNAMIC for main hitbox
+    this.spi.visible = true;
 
     allSprites.pixelPerfect = true;
+    allSprites.visible = true;
   }
 
   respawn() {
@@ -71,68 +75,26 @@ class King {
   }
 
   handleInput(walls, pig) {
-  // Horizontal movement
-    if (keyIsDown(RIGHT_ARROW)) {
-      this.hitBox.vel.x = 6;
-      this.hitBox.mirror.x = false;
-      this.spi.mirror.x = false;
-      this.spi.changeAni('run');
-    }
-    else if (keyIsDown(LEFT_ARROW)) {
-      this.hitBox.vel.x = -6;
-      this.spi.mirror.x = true;
-      this.spi.changeAni('run');
-    }
-    else {
-      this.hitBox.vel.x = 0;
-      this.spi.changeAni('idle');
-    }
-
-    // Jumping
-    if (keyIsDown(UP_ARROW) && !this.isJumping) {
-      this.hitBox.vel.y = -7; // jump strength
-      this.isJumping = true;
-    }
-
-    // Apply gravity
-    // this.hitBox.vel.y += GRAVITY;
-
-    // Limit fall speed
-    // if (this.hitBox.vel.y > MAX_FALL_SPEED) {
-    //   this.hitBox.vel.y = MAX_FALL_SPEED;
-    // }
-
-    // Animations
-    if (this.hitBox.vel.y < 0) {
-      this.spi.changeAni('jump');
-    }
-    else if (this.isJumping && this.hitBox.vel.y > 0) {
-      this.spi.changeAni('fall');
-    }
-
-    // Ground collision
-    if (this.hitBoxJump.collides(walls)&& this.hitBox.vel.x === 0) {
-      this.hitBox.vel.y = 0;
-      this.spi.changeAni('idle');
-    }
-    
-    // Reset jump when on ground
-    if (this.hitBoxJump.collides(walls)) {
-      this.isJumping = false;
-    }
-
-    // --- PLAYER ATTACK LOGIC WITH COOLDOWN ---
+  // --- PLAYER ATTACK LOGIC WITH COOLDOWN ---
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
     }
     if (this.hitCooldown > 0) {
       this.hitCooldown--;
     }
+    if (this.attackTimer > 0) {
+      this.attackTimer--;
+      this.isAttacking = true;
+    } else {
+      this.isAttacking = false;
+    }
 
-    if (keyIsDown(32) && this.attackCooldown === 0) { // Space bar
+    // Attack input
+    if (keyIsDown(32) && this.attackCooldown === 0 && this.attackTimer === 0) { // Space bar
       this.spi.changeAni('attack');
       this.isAttacking = true;
       this.attackCooldown = PLAYER_ATTACK_COOLDOWN;
+      this.attackTimer = 16; // frameDelay * frames (adjust as needed)
 
       // Check if pig is in range and alive
       if (pig && !pig.dead) {
@@ -144,13 +106,55 @@ class King {
         }
       }
     }
-    else {
-      this.isAttacking = false;
+
+    // Only allow movement/jump animations if not attacking
+    if (!this.isAttacking) {
+    // Horizontal movement
+      if (keyIsDown(RIGHT_ARROW)) {
+        this.hitBox.vel.x = 6;
+        this.hitBox.mirror.x = false;
+        this.spi.mirror.x = false;
+        this.spi.changeAni('run');
+      }
+      else if (keyIsDown(LEFT_ARROW)) {
+        this.hitBox.vel.x = -6;
+        this.spi.mirror.x = true;
+        this.spi.changeAni('run');
+      }
+      else {
+        this.hitBox.vel.x = 0;
+        this.spi.changeAni('idle');
+      }
+
+      // Jumping
+      if (keyIsDown(UP_ARROW) && !this.isJumping) {
+        this.hitBox.vel.y = -7; // jump strength
+        this.isJumping = true;
+      }
+
+      // Animations
+      if (this.hitBox.vel.y < 0) {
+        this.spi.changeAni('jump');
+      }
+      else if (this.isJumping && this.hitBox.vel.y > 0) {
+        this.spi.changeAni('fall');
+      }
+    }
+
+    // // Ground collision
+    // if (this.hitBoxJump.collides(walls)&& this.hitBox.vel.x === 0) {
+    //   this.hitBox.vel.y = 0;
+    //   this.spi.changeAni('idle');
+    // }
+  
+    // Reset jump when on ground and falling or not moving up
+    if (this.hitBoxJump.overlap(walls) && this.hitBox.vel.y >= 0) {
+      this.isJumping = false;
     }
 
     // --- HANDLE PIG ATTACKING PLAYER ---
     if (pig && pig.isAttacking && this.hitCooldown === 0 && !pig.dead) {
-      // Check if pig is close enough to hit player
+    // Check if pig is close enough to hit player
       const dx = pig.getX() - this.hitBox.x;
       const dy = pig.getY() - this.hitBox.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -160,7 +164,7 @@ class King {
         this.hitCooldown = 30; // brief invulnerability
         if (this.health <= 0) {
           this.spi.changeAni('dead');
-          // Optionally: handle player death
+        // Optionally: handle player death
         }
       }
     }
@@ -175,14 +179,19 @@ class King {
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
       this.spi.position.y = this.hitBox.position.y - 24;
-      this.hitBoxJump.position.x = this.hitBox.position.x;
-      this.hitBoxJump.position.y = this.hitBox.position.y+27;
     }
     else {
       this.spi.position.x = this.hitBox.position.x + 18;
       this.spi.position.y = this.hitBox.position.y - 24;
-      this.hitBoxJump.position.x = this.hitBox.position.x;
-      this.hitBoxJump.position.y = this.hitBox.position.y+27;
+    }
+    this.hitBoxJump.position.x = this.hitBox.position.x;
+    this.hitBoxJump.position.y = this.hitBox.position.y + (this.hitBox.height / 2) + (this.hitBoxJump.height / 2);
+    this.hitBoxJump.visible = true; // Debug
+
+    if (this.hitBoxJump.overlap(walls)) {
+      this.hitBoxJump.color = color(0,255,0,100); // turn sensor green when overlapping
+    } else {
+      this.hitBoxJump.color = color(0,0,255,100); // blue otherwise
     }
   }
 

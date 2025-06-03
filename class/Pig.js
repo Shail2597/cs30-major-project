@@ -1,5 +1,3 @@
-let pigSpi;
-let hitBoxPig;
 const PIG_ACTIVATION_DISTANCE = 250;
 const PIG_SPEED = 2.2;
 const PIG_ATTACK_RANGE = 40;
@@ -17,15 +15,16 @@ class Pig {
     this.hitCooldown = 0; // Prevents taking multiple hits instantly
     this.spawnX = x;
     this.spawnY = y;
+    this.pigSpi = null;
+    this.hitBoxPig = null;
   }
 
   pre(spriteSheet) {
-    // Suppose your frame size is 64x64:
-    hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 28);
-    pigSpi    = new Sprite(hitBoxPig.x, hitBoxPig.y, 34, 28);
-    pigSpi.spriteSheet = spriteSheet;
-    pigSpi.addAnis({
-      death:  { row: 0, frames: 4, frameDelay: 8 }, // Added frameDelay for death animation
+    this.hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 28);
+    this.pigSpi    = new Sprite(this.hitBoxPig.x, this.hitBoxPig.y, 34, 28);
+    this.pigSpi.spriteSheet = spriteSheet;
+    this.pigSpi.addAnis({
+      death:  { row: 0, frames: 4, frameDelay: 8 },
       fall:   { row: 1 },
       ground: { row: 2 },
       hit:    { row: 3, frames: 2 },
@@ -34,51 +33,41 @@ class Pig {
       run:    { row: 6, frames: 6 },
       attack: { row: 7, frames: 5 },
     });
-    pigSpi.changeAni('idle');
+    this.pigSpi.changeAni('idle');
     allSprites.pixelPerfect = true;
-    hitBoxPig.rotationLock = true;
-    pigSpi.rotationLock = true;
-    hitBoxPig.collider = "dynamic";
-    pigSpi.visible = false;
-    hitBoxPig.visible = true;
+    this.hitBoxPig.rotationLock = true;
+    this.pigSpi.rotationLock = true;
+    this.hitBoxPig.collider = "dynamic";
+    this.pigSpi.visible = false;
+    this.hitBoxPig.visible = true;
   }
 
   move(playerX, playerY) {
     if (this.dead) {
-      hitBoxPig.vel.x = 0;
-      // Do not set vel.y to 0, let gravity act
+      this.hitBoxPig.vel.x = 0;
       return;
     }
-
-    // Calculate distance to player
-    const dx = playerX - hitBoxPig.x;
-    const dy = playerY - hitBoxPig.y;
+    const dx = playerX - this.hitBoxPig.x;
+    const dy = playerY - this.hitBoxPig.y;
     const distToPlayer = Math.sqrt(dx * dx + dy * dy);
 
-    // Activate if player is close enough
     if (!this.activated && distToPlayer < PIG_ACTIVATION_DISTANCE) {
       this.activated = true;
     }
 
     if (this.activated) {
-      // Move towards player if not attacking
       if (distToPlayer > PIG_ATTACK_RANGE) {
         const angle = Math.atan2(dy, dx);
-        hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
-        // Do not set vel.y here, let gravity act
+        this.hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
         this.isAttacking = false;
       }
       else {
-        // In attack range
-        hitBoxPig.vel.x = 0;
-        // Do not set vel.y here, let gravity act
+        this.hitBoxPig.vel.x = 0;
         this.isAttacking = true;
       }
     }
     else {
-      // Idle state
-      hitBoxPig.vel.x = 0;
-      // Do not set vel.y here, let gravity act
+      this.hitBoxPig.vel.x = 0;
       this.isAttacking = false;
     }
   }
@@ -87,20 +76,14 @@ class Pig {
     if (this.dead) {
       return;
     }
-
-    // Pig attack logic (attack only if cooldown is 0)
     if (this.isAttacking && this.attackCooldown <= 0) {
-      pigSpi.changeAni('attack');
-      // You can add logic here to reduce player health, e.g.:
+      this.pigSpi.changeAni('attack');
       // playerObj.takeDamage();
       this.attackCooldown = PIG_ATTACK_COOLDOWN;
     }
-
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
     }
-
-    // Pig hit logic (playerObj should call this when attacking)
     if (this.hitCooldown > 0) {
       this.hitCooldown--;
     }
@@ -111,72 +94,69 @@ class Pig {
       return;
     }
     this.health--;
-    pigSpi.changeAni('hit');
+    this.pigSpi.changeAni('hit');
     this.hitCooldown = 20; // brief invulnerability
     if (this.health <= 0) {
       this.dead = true;
-      pigSpi.changeAni('death');
+      this.pigSpi.changeAni('death');
       // Optionally: remove pig after animation
     }
   }
 
   colliderAndhitBox() {
-    pigSpi.collider = "NONE";
-    pigSpi.position.x = hitBoxPig.position.x-2;
-    pigSpi.position.y = hitBoxPig.position.y-6.5;
+    this.pigSpi.collider = "NONE";
+    this.pigSpi.position.x = this.hitBoxPig.position.x-2;
+    this.pigSpi.position.y = this.hitBoxPig.position.y-6.5;
   }
 
   handleAnimations() {
     if (this.dead) {
       return;
     }
-
-    // Set mirror based on direction only if moving
-    if (hitBoxPig.vel.x > 0.1) {
-      pigSpi.mirror.x = true; // Facing right (swap to true)
+    if (this.hitBoxPig.vel.x > 0.1) {
+      this.pigSpi.mirror.x = true;
     }
-    else if (hitBoxPig.vel.x < -0.1) {
-      pigSpi.mirror.x = false; // Facing left (swap to false)
+    else if (this.hitBoxPig.vel.x < -0.1) {
+      this.pigSpi.mirror.x = false;
     }
-
-    // Only change animation if needed
     if (this.isAttacking) {
-      if (pigSpi.ani?.name !== 'attack' || pigSpi.ani.frame === pigSpi.ani.lastFrame) {
-        pigSpi.changeAni('attack');
+      if (this.pigSpi.ani?.name !== 'attack' || this.pigSpi.ani.frame === this.pigSpi.ani.lastFrame) {
+        this.pigSpi.changeAni('attack');
       }
     }
     else if (this.activated) {
-      if (Math.abs(hitBoxPig.vel.x) > 0.1) {
-        if (pigSpi.ani?.name !== 'run') {
-          pigSpi.changeAni('run');
+      if (Math.abs(this.hitBoxPig.vel.x) > 0.1) {
+        if (this.pigSpi.ani?.name !== 'run') {
+          this.pigSpi.changeAni('run');
         }
       }
       else {
-        if (pigSpi.ani?.name !== 'idle') {
-          pigSpi.changeAni('idle');
+        if (this.pigSpi.ani?.name !== 'idle') {
+          this.pigSpi.changeAni('idle');
         }
       }
     }
   }
 
   doAll(playerX, playerY, playerObj) {
-    if (!pigSpi) {
+    if (!this.pigSpi) {
       return;
-    } // Guard: don't run if not initialized
+    }
     this.move(playerX, playerY);
     this.handleAttack(playerObj);
     this.handleAnimations();
     this.colliderAndhitBox();
-    pigSpi.update();
-    pigSpi.draw();
-    pigSpi.scale = 1.7;
+    this.pigSpi.update();
+    this.pigSpi.draw();
+    this.pigSpi.scale = 1.7;
   }
 
-  // --- Add these methods for King to call ---
   getX() {
-    return hitBoxPig.x; 
+    return this.hitBoxPig.x;
   }
   getY() {
-    return hitBoxPig.y; 
+    return this.hitBoxPig.y;
   }
 }
+
+window.Pig = Pig;

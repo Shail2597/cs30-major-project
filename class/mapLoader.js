@@ -45,7 +45,7 @@ class MapLoader {
   }
 
   setup(){
-    //world.gravity.y = 9; // Set gravity for the game
+    world.gravity.y = 9; // Set gravity for the game
     createCanvas(windowWidth, windowHeight);
     noSmooth();
 
@@ -206,7 +206,7 @@ class MapLoader {
         );
 
         pig.pre(this.pigSpriteSheet);
-        pigSpi.visible = true;
+        pig.pigSpi.visible = true; // <-- FIXED HERE
         this.pigs.push(pig);
       }
 
