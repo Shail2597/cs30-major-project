@@ -289,6 +289,18 @@ class MapLoader {
             s.color = color(255, 0, 0, 100);
             this.walls.add(s);
           }
+          else if (num === 23) {
+            let s = new Sprite(
+              offsetX + x * this.tileSize + this.tileSize / 2,
+              offsetY + y * this.tileSize + this.tileSize / 4 - 8,
+              this.tileSize,
+              this.tileSize / 8
+            );
+            s.collider = 'static';
+            s.debug = true;
+            s.color = color(255, 0, 0, 100);
+            this.walls.add(s);
+          }
         }
       }
     }

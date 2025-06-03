@@ -12,7 +12,7 @@ function preload() {
     tileSize: 64,
     bgCount: 47,
     wallCount: 47,
-    decCount: 22,
+    decCount: 23,
   });
   mg.preload();
   ml = new MapLoader({
@@ -21,7 +21,7 @@ function preload() {
     tileSize: 64,
     bgCount: 47,
     wallCount: 47,
-    decCount: 22,
+    decCount: 23,
   });
   ml.preload();
 }
@@ -34,7 +34,7 @@ function setup() {
 }
 
 function draw() {
-  background(220);
+  background(62, 56, 80);
   if (state === "intro") {
     imageMode(CENTER);
     image(introImg, width / 2, height / 2);
