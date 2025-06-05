@@ -57,7 +57,7 @@ class MapLoader {
     this.loadBtn = createButton('Load Map')
       .position(10, 10)
       .size(100, 30)
-      .style('background-color', '#6a0dad')
+      .style('background-color', '#3E3850')
       .style('color', '#ffffff')
       .style('border', 'none')
       .style('border-radius', '8px')
@@ -68,7 +68,7 @@ class MapLoader {
     this.backBtn = createButton('Back')
       .position(10, 50)
       .size(100, 30)
-      .style('background-color', '#6a0dad')
+      .style('background-color', '#3E3850')
       .style('color', '#ffffff')
       .style('border', 'none')
       .style('border-radius', '8px')
@@ -81,14 +81,14 @@ class MapLoader {
       this.loadBtn.style('background-color', '#8541ee');
     });
     this.loadBtn.mouseOut(() => {
-      this.loadBtn.style('background-color', '#6a0dad');
+      this.loadBtn.style('background-color', '#3E3850');
     }); 
 
     this.backBtn.mouseOver(() => {
       this.backBtn.style('background-color', '#8541ee');
     });
     this.backBtn.mouseOut(() => {
-      this.backBtn.style('background-color', '#6a0dad');
+      this.backBtn.style('background-color', '#3E3850');
     }); 
   }
 
@@ -157,6 +157,26 @@ class MapLoader {
     const PLAYER_SPAWN_TILE = "blocks/decoration/dec21.png";
     const PIG_SPAWN_TILE = "blocks/decoration/dec22.png";
 
+    if (this.player instanceof King) {
+      this.player.destroy();
+      this.player = null;
+    }
+
+    if (Array.isArray(this.pigs)) {
+      for (const oldPig of this.pigs) {
+        if (typeof oldPig.destroy === 'function') {
+          // If you gave Pig a destroy() method similar to King.destroy()
+          oldPig.destroy();
+        }
+        else if (oldPig.pigSpi && typeof oldPig.pigSpi.remove === 'function') {
+          // Otherwise, at least remove its p5.play sprite(s)
+          oldPig.pigSpi.remove();
+        }
+        // (Remove other internal Pig sprites here if needed.)
+      }
+      this.pigs = [];
+    }
+    
     if (!file || !file.data) {
       return;
     }
@@ -184,6 +204,7 @@ class MapLoader {
       else {
         this.layers.decoration = Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
       }
+
 
       // Build wall colliders
       this.buildWallColliders();

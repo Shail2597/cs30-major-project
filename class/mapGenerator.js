@@ -154,22 +154,22 @@ class MapGenerator {
       display:flex; gap:8px;
     `);
     this.saveBtn = createButton('Save').parent(this.controls)
-      .attribute('disabled','').size(100,40).style('background-color', '#6a0dad').style('color','#ffffff').style('border', 'none').style('border-radius','6px').style('font-size', '16px').style('font-family', 'Ariel, sans-serif').style('cursor', 'pointer').mouseClicked(() => this._save());
+      .attribute('disabled','').size(100,40).style('background-color', '#3E3850').style('color','#ffffff').style('border', 'none').style('border-radius','6px').style('font-size', '16px').style('font-family', 'Ariel, sans-serif').style('cursor', 'pointer').mouseClicked(() => this._save());
     this.backBtn = createButton('Back').parent(this.controls)
-      .size(100,40).style('background-color', '#6a0dad').style('color','#ffffff').style('border', 'none').style('border-radius','6px').style('font-size', '16px').style('font-family', 'Ariel, sans-serif').style('cursor', 'pointer').mouseClicked(() => location.reload());
+      .size(100,40).style('background-color', '#3E3850').style('color','#ffffff').style('border', 'none').style('border-radius','6px').style('font-size', '16px').style('font-family', 'Ariel, sans-serif').style('cursor', 'pointer').mouseClicked(() => location.reload());
 
     this.saveBtn.mouseOver(() => {
       this.saveBtn.style('background-color', '#8541ee');
     });
     this.saveBtn.mouseOut(() => {
-      this.saveBtn.style('background-color', '#6a0dad');
+      this.saveBtn.style('background-color', '#3E3850');
     });
     
     this.backBtn.mouseOver(() => {
       this.backBtn.style('background-color', '#8541ee');
     });
     this.backBtn.mouseOut(() => {
-      this.backBtn.style('background-color', '#6a0dad');
+      this.backBtn.style('background-color', '#3E3850');
     }); 
   }
 
