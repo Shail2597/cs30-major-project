@@ -74,7 +74,7 @@ class King {
     this.hitCooldown = 0;
   }
 
-  handleInput(walls, pig) {
+  handleInput(walls, pigs) {
   // --- PLAYER ATTACK LOGIC WITH COOLDOWN ---
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
@@ -97,13 +97,17 @@ class King {
       this.attackCooldown = PLAYER_ATTACK_COOLDOWN;
       this.attackTimer = 16; // frameDelay * frames (adjust as needed)
 
-      // Check if pig is in range and alive
-      if (pig && !pig.dead) {
-        const dx = pig.getX() - this.hitBox.x;
-        const dy = pig.getY() - this.hitBox.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < PLAYER_ATTACK_RANGE) {
-          pig.takeHit();
+      // Check if any pig is in range and alive
+      if (Array.isArray(pigs)) {
+        for (const pig of pigs) {
+          if (pig && !pig.dead) {
+            const dx = pig.getX() - this.hitBox.x;
+            const dy = pig.getY() - this.hitBox.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < PLAYER_ATTACK_RANGE) {
+              pig.takeHit();
+            }
+          }
         }
       }
     }
@@ -128,7 +132,7 @@ class King {
       }
 
       // Jumping
-      if (keyIsDown(UP_ARROW) && !this.isJumping) {
+      if (keyIsDown(UP_ARROW) && !this.isJumping ) {
         this.hitBox.vel.y = -7; // jump strength
         this.isJumping = true;
       }
@@ -154,18 +158,21 @@ class King {
     }
 
     // --- HANDLE PIG ATTACKING PLAYER ---
-    if (pig && pig.isAttacking && this.hitCooldown === 0 && !pig.dead) {
-    // Check if pig is close enough to hit player
-      const dx = pig.getX() - this.hitBox.x;
-      const dy = pig.getY() - this.hitBox.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < PIG_ATTACK_RANGE) {
-        this.health--;
-        this.spi.changeAni('hit');
-        this.hitCooldown = 30; // brief invulnerability
-        if (this.health <= 0) {
-          this.spi.changeAni('dead');
-        // Optionally: handle player death
+    if (Array.isArray(pigs)) {
+      for (const pig of pigs) {
+        if (pig && pig.isAttacking && this.hitCooldown === 0 && !pig.dead) {
+          const dx = pig.getX() - this.hitBox.x;
+          const dy = pig.getY() - this.hitBox.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < PIG_ATTACK_RANGE) {
+            this.health--;
+            this.spi.changeAni('hit');
+            this.hitCooldown = 30; // brief invulnerability
+            if (this.health <= 0) {
+              this.spi.changeAni('dead');
+            // Optionally: handle player death
+            }
+          }
         }
       }
     }
@@ -195,6 +202,8 @@ class King {
     else {
       this.hitBoxJump.color = color(0,0,255,100); // blue otherwise
     }
+    this.hitBoxJump.position.y = this.hitBox.position.y + (this.hitBox.height / 2) + (this.hitBoxJump.height / 2);
+    this.hitBoxJump.visible = true; 
   }
 
   // Helper for pig to get player position
@@ -222,11 +231,11 @@ class King {
     // (If you added any other sprites inside King, remove them here, too.)
   }
 
-  doAll(walls, pig) {
+  doAll(walls, pigs) {
     if (!this.hitBox || !this.spi) {
       return;
     }
-    this.handleInput(walls, pig);
+    this.handleInput(walls, pigs);
     this.spi.update();
     this.spi.draw();
     this.spi.scale = 2;
