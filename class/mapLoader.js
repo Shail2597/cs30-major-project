@@ -54,13 +54,46 @@ class MapLoader {
 
     this.fileInput = createFileInput(file => this.handleFile(file));
     this.fileInput.hide();
-    createButton('Load Map')
+    this.loadBtn = createButton('Load Map')
       .position(10, 10)
+      .size(100, 30)
+      .style('background-color', '#6a0dad')
+      .style('color', '#ffffff')
+      .style('border', 'none')
+      .style('border-radius', '8px')
+      .style('padding', '8px 0px')
+      .style('font-size', '16px')
+      .style('font-family', 'Arial, sans-serif')
       .mousePressed(() => this.fileInput.elt.click());
+    this.backBtn = createButton('Back')
+      .position(10, 50)
+      .size(100, 30)
+      .style('background-color', '#6a0dad')
+      .style('color', '#ffffff')
+      .style('border', 'none')
+      .style('border-radius', '8px')
+      .style('padding', '8px 0px')
+      .style('font-size', '16px')
+      .style('font-family', 'Arial, sans-serif')
+      .mousePressed(() => location.reload());
+
+    this.loadBtn.mouseOver(() => {
+      this.loadBtn.style('background-color', '#8541ee');
+    });
+    this.loadBtn.mouseOut(() => {
+      this.loadBtn.style('background-color', '#6a0dad');
+    }); 
+
+    this.backBtn.mouseOver(() => {
+      this.backBtn.style('background-color', '#8541ee');
+    });
+    this.backBtn.mouseOut(() => {
+      this.backBtn.style('background-color', '#6a0dad');
+    }); 
   }
 
   draw() {
-    background(220);
+    background(62, 56, 80);
 
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
@@ -302,10 +335,10 @@ class MapLoader {
           }
           else if (num === 23) {
             let s = new Sprite(
-              offsetX + x * this.tileSize + this.tileSize / 2,
-              offsetY + y * this.tileSize + this.tileSize / 4 - 8,
-              this.tileSize,
-              this.tileSize / 8
+              offsetX + x * this.tileSize + this.tileSize / 3,
+              offsetY + y * this.tileSize + this.tileSize * 0.75,
+              this.tileSize/2 + 4,
+              this.tileSize / 3 + 4
             );
             s.collider = 'static';
             s.debug = true;
