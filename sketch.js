@@ -51,7 +51,7 @@ function setupIntroScreen() {
   otherButton0 = createButton("Start Map Editor");
   otherButton0.position(width/2 - 100, height/2 +  60);
   otherButton0.size(200, 40);
-  otherButton0.style("background-color", "#6a0dad");
+  otherButton0.style("background-color", "#3E3850");
   otherButton0.style("color", "#ffffff");
   otherButton0.style("border", "none");
   otherButton0.style("border-radius", "8px");
@@ -64,7 +64,7 @@ function setupIntroScreen() {
   otherButton1 = createButton("Map Loader");
   otherButton1.position(width/2 - 100, height/2 + 110);
   otherButton1.size(200, 40);
-  otherButton1.style("background-color", "#6a0dad");
+  otherButton1.style("background-color", "#3E3850");
   otherButton1.style("color", "#ffffff");
   otherButton1.style("border", "none");
   otherButton1.style("border-radius", "8px");
@@ -77,7 +77,7 @@ function setupIntroScreen() {
   otherButton2 = createButton("Adventure Mode");
   otherButton2.position(width/2 - 100, height/2 + 10);
   otherButton2.size(200, 40);
-  otherButton2.style("background-color", "#6a0dad");
+  otherButton2.style("background-color", "#3E3850");
   otherButton2.style("color", "#ffffff");
   otherButton2.style("border", "none");
   otherButton2.style("border-radius", "8px");
@@ -90,21 +90,21 @@ function setupIntroScreen() {
     otherButton0.style('background-color', '#8541ee');
   });
   otherButton0.mouseOut(() => {
-    otherButton0.style('background-color', '#6a0dad');
+    otherButton0.style('background-color', '#3E3850');
   });
 
   otherButton1.mouseOver(() => {
     otherButton1.style('background-color', '#8541ee');
   });
   otherButton1.mouseOut(() => {
-    otherButton1.style('background-color', '#6a0dad');
+    otherButton1.style('background-color', '#3E3850');
   });
   
   otherButton2.mouseOver(() => {
     otherButton2.style('background-color', '#8541ee');
   });
   otherButton2.mouseOut(() => {
-    otherButton2.style('background-color', '#6a0dad');
+    otherButton2.style('background-color', '#3E3850');
   });
 }
 

@@ -195,6 +195,17 @@ class Pig {
   getY() {
     return this.hitBoxPig.y;
   }
+
+  destroy() {
+    if (this.pigSpi && typeof this.pigSpi.remove === 'function') {
+      this.pigSpi.remove();
+      this.pigSpi = null;
+    }
+    if (this.hitBoxPig && typeof this.hitBoxPig.remove === 'function') {
+      this.hitBoxPig.remove();
+      this.hitBoxPig = null;
+    }
+  }
 }
 
 window.Pig = Pig;

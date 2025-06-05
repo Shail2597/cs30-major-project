@@ -85,7 +85,8 @@ class King {
     if (this.attackTimer > 0) {
       this.attackTimer--;
       this.isAttacking = true;
-    } else {
+    }
+    else {
       this.isAttacking = false;
     }
 
@@ -172,6 +173,15 @@ class King {
       this.spi.position.y = this.hitBox.position.y - 24;
     }
     this.hitBoxJump.position.x = this.hitBox.position.x;
+    this.hitBoxJump.position.y = this.hitBox.position.y + this.hitBox.height / 2 + this.hitBoxJump.height / 2;
+    this.hitBoxJump.visible = true; // Debug
+
+    if (this.hitBoxJump.overlap(walls)) {
+      this.hitBoxJump.color = color(0,255,0,100); // turn sensor green when overlapping
+    }
+    else {
+      this.hitBoxJump.color = color(0,0,255,100); // blue otherwise
+    }
     this.hitBoxJump.position.y = this.hitBox.position.y + (this.hitBox.height / 2) + (this.hitBoxJump.height / 2);
     this.hitBoxJump.visible = true; 
   }
@@ -200,6 +210,23 @@ class King {
       this.spi.changeAni('dead');
       // Optionally: handle player death here
     }
+  }
+
+  destroy() {
+    // Remove each p5.play Sprite so it really goes away:
+    if (this.hitBox && typeof this.hitBox.remove === 'function') {
+      this.hitBox.remove();
+      this.hitBox = null;
+    }
+    if (this.spi && typeof this.spi.remove === 'function') {
+      this.spi.remove();
+      this.spi = null;
+    }
+    if (this.hitBoxJump && typeof this.hitBoxJump.remove === 'function') {
+      this.hitBoxJump.remove();
+      this.hitBoxJump = null;
+    }
+    // (If you added any other sprites inside King, remove them here, too.)
   }
 
   doAll(walls, pigs) {
