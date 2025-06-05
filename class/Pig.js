@@ -21,17 +21,17 @@ class Pig {
 
   pre(spriteSheet) {
     this.hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 28);
-    this.pigSpi    = new Sprite(this.hitBoxPig.x, this.hitBoxPig.y, 34, 28);
+    this.pigSpi = new Sprite(this.hitBoxPig.x, this.hitBoxPig.y, 34, 28);
     this.pigSpi.spriteSheet = spriteSheet;
     this.pigSpi.addAnis({
-      death:  { row: 0, frames: 4, frameDelay: 8 },
+      death:  { row: 0, frames: 4, frameDelay: 10 },
       fall:   { row: 1 },
       ground: { row: 2 },
-      hit:    { row: 3, frames: 2 },
-      idle:   { row: 4, frames: 11 , frameDelay: 6 },
+      hit:    { row: 3, frames: 2, frameDelay: 8 },
+      idle:   { row: 4, frames: 11, frameDelay: 6 },
       jump:   { row: 5, frames: 1 },
-      run:    { row: 6, frames: 6 },
-      attack: { row: 7, frames: 5 },
+      run:    { row: 6, frames: 6, frameDelay: 6 },
+      attack: { row: 7, frames: 5, frameDelay: 6 }
     });
     this.pigSpi.changeAni('idle');
     allSprites.pixelPerfect = true;
@@ -78,7 +78,9 @@ class Pig {
     }
     if (this.isAttacking && this.attackCooldown <= 0) {
       this.pigSpi.changeAni('attack');
-      // playerObj.takeDamage();
+      if (playerObj && typeof playerObj.takeDamage === "function") {
+        playerObj.takeDamage(this.hitBoxPig.x);
+      }
       this.attackCooldown = PIG_ATTACK_COOLDOWN;
     }
     if (this.attackCooldown > 0) {
@@ -93,17 +95,17 @@ class Pig {
     if (this.dead || this.hitCooldown > 0) {
       return;
     }
+    
     this.health--;
-    this.pigSpi.changeAni('hit');
     this.hitCooldown = 20; // brief invulnerability
+    this.pigSpi.changeAni('hit');
+    
+    // Force animation to start from beginning
+    this.pigSpi.ani.frame = 0;
 
     // Knockback: push pig away from attacker (king)
     if (typeof attackerX === "number") {
       const direction = this.hitBoxPig.x < attackerX ? -1 : 1;
-      // King knockback
-      this.hitBox.vel.x = direction * 14;
-
-      // Pig knockback
       this.hitBoxPig.vel.x = direction * 12;
     }
 
@@ -123,28 +125,40 @@ class Pig {
     if (this.dead) {
       return;
     }
+
+    // Handle hit animation with proper state tracking
+    if (this.pigSpi.ani?.name === 'hit') {
+      if (this.pigSpi.ani.frame < this.pigSpi.ani.lastFrame) {
+        return; // Keep playing hit animation until it's done
+      }
+    }
+
+    // After hit animation is done or for other states
+    if (this.hitCooldown > 0) {
+      // Force hit animation to play
+      if (this.pigSpi.ani?.name !== 'hit') {
+        this.pigSpi.changeAni('hit');
+      }
+      return;
+    }
+
+    // Regular animation states
+    if (this.isAttacking) {
+      this.pigSpi.changeAni('attack');
+    }
+    else if (Math.abs(this.hitBoxPig.vel.x) > 0.1) {
+      this.pigSpi.changeAni('run');
+    }
+    else {
+      this.pigSpi.changeAni('idle');
+    }
+
+    // Handle movement direction
     if (this.hitBoxPig.vel.x > 0.1) {
       this.pigSpi.mirror.x = true;
     }
     else if (this.hitBoxPig.vel.x < -0.1) {
       this.pigSpi.mirror.x = false;
-    }
-    if (this.isAttacking) {
-      if (this.pigSpi.ani?.name !== 'attack' || this.pigSpi.ani.frame === this.pigSpi.ani.lastFrame) {
-        this.pigSpi.changeAni('attack');
-      }
-    }
-    else if (this.activated) {
-      if (Math.abs(this.hitBoxPig.vel.x) > 0.1) {
-        if (this.pigSpi.ani?.name !== 'run') {
-          this.pigSpi.changeAni('run');
-        }
-      }
-      else {
-        if (this.pigSpi.ani?.name !== 'idle') {
-          this.pigSpi.changeAni('idle');
-        }
-      }
     }
   }
 

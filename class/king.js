@@ -29,13 +29,13 @@ class King {
     // Assign spritesheet and animations
     this.spi.spriteSheet = spriteSheet;
     this.spi.addAnis({
-      attack: { row: 0, frames: 3, frameDelay: 6},
-      dead: { row: 1, frames: 4 },
+      attack: { row: 0, frames: 3, frameDelay: 6 },
+      dead: { row: 1, frames: 4, frameDelay: 10 }, // <-- add frameDelay
       door_in: { row: 2, frames: 8, frameDelay: 14 },
       door_out: { row: 3, frames: 8, frameDelay: 14 },
       fall: { row: 4 },
       ground: { row: 5 },
-      hit: { row: 6, frames: 2 },
+      hit: { row: 6, frames: 2, frameDelay: 8 },   // <-- add frameDelay
       idle: { row: 7, frames: 11 },
       jump: { row: 8 },
       run: { row: 9, frames: 8 },
@@ -87,6 +87,12 @@ class King {
       this.isAttacking = true;
     } else {
       this.isAttacking = false;
+    }
+
+    // --- Prevent overriding 'hit' animation while hit ---
+    if (this.spi.ani?.name === 'hit' && this.spi.ani.frame < this.spi.ani.lastFrame) {
+      this.hitBox.vel.x = 0;
+      return;
     }
 
     // Attack input
@@ -145,35 +151,9 @@ class King {
       }
     }
 
-    // // Ground collision
-    // if (this.hitBoxJump.collides(walls)&& this.hitBox.vel.x === 0) {
-    //   this.hitBox.vel.y = 0;
-    //   this.spi.changeAni('idle');
-    // }
-  
     // Reset jump when on ground and falling or not moving up
     if (this.hitBoxJump.overlap(walls) && this.hitBox.vel.y >= 0) {
       this.isJumping = false;
-    }
-
-    // --- HANDLE PIG ATTACKING PLAYER ---
-    if (Array.isArray(pigs)) {
-      for (const pig of pigs) {
-        if (pig && pig.isAttacking && this.hitCooldown === 0 && !pig.dead) {
-          const dx = pig.getX() - this.hitBox.x;
-          const dy = pig.getY() - this.hitBox.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < PIG_ATTACK_RANGE) {
-            this.health--;
-            this.spi.changeAni('hit');
-            this.hitCooldown = 30; // brief invulnerability
-            if (this.health <= 0) {
-              this.spi.changeAni('dead');
-            // Optionally: handle player death
-            }
-          }
-        }
-      }
     }
 
     if (mouseIsPressed) {
@@ -202,6 +182,24 @@ class King {
   }
   getY() {
     return this.hitBox.y; 
+  }
+
+  takeDamage(attackerX) {
+    if (this.hitCooldown > 0 || this.health <= 0) return;
+    this.health--;
+    this.spi.changeAni('hit');
+    this.hitCooldown = 20; // was 30, now more responsive
+
+    // Knockback if attackerX is provided
+    if (typeof attackerX === "number") {
+      const direction = this.hitBox.x < attackerX ? -1 : 1;
+      this.hitBox.vel.x = direction * 14;
+    }
+
+    if (this.health <= 0) {
+      this.spi.changeAni('dead');
+      // Optionally: handle player death here
+    }
   }
 
   doAll(walls, pigs) {
