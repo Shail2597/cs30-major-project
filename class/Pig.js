@@ -43,7 +43,7 @@ class Pig {
   }
 
   move(playerX, playerY) {
-    if (this.dead) {
+    if (this.dead || this.pigSpi.ani?.name === 'hit') {
       this.hitBoxPig.vel.x = 0;
       return;
     }
@@ -89,17 +89,27 @@ class Pig {
     }
   }
 
-  takeHit() {
+  takeHit(attackerX) {
     if (this.dead || this.hitCooldown > 0) {
       return;
     }
     this.health--;
     this.pigSpi.changeAni('hit');
     this.hitCooldown = 20; // brief invulnerability
+
+    // Knockback: push pig away from attacker (king)
+    if (typeof attackerX === "number") {
+      const direction = this.hitBoxPig.x < attackerX ? -1 : 1;
+      // King knockback
+      this.hitBox.vel.x = direction * 14;
+
+      // Pig knockback
+      this.hitBoxPig.vel.x = direction * 12;
+    }
+
     if (this.health <= 0) {
       this.dead = true;
       this.pigSpi.changeAni('death');
-      // Optionally: remove pig after animation
     }
   }
 
@@ -146,6 +156,20 @@ class Pig {
     this.handleAttack(playerObj);
     this.handleAnimations();
     this.colliderAndhitBox();
+
+    // If dead, play death animation then remove
+    if (this.dead) {
+      this.pigSpi.update();
+      this.pigSpi.draw();
+      this.pigSpi.scale = 1.7;
+      // Remove after death animation finishes
+      if (this.pigSpi.ani?.name === 'death' && this.pigSpi.ani.frame === this.pigSpi.ani.lastFrame) {
+        this.pigSpi.remove();
+        this.hitBoxPig.remove();
+      }
+      return;
+    }
+
     this.pigSpi.update();
     this.pigSpi.draw();
     this.pigSpi.scale = 1.7;

@@ -74,11 +74,22 @@ class MapLoader {
 
     if (this.player && this.player.hitBox) {
       if (this.pigs && this.player?.hitBox) {
-        for (const pig of this.pigs) {
+        // Loop backwards to safely remove items
+        for (let i = this.pigs.length - 1; i >= 0; i--) {
+          const pig = this.pigs[i];
           pig.doAll(this.player.getX(), this.player.getY(), this.player);
+          // Remove pig from array if both sprites are removed (after death animation)
+          if (pig.dead && (!pig.pigSpi.removed && pig.pigSpi.ani?.name === 'death' && pig.pigSpi.ani.frame === pig.pigSpi.ani.lastFrame)) {
+            // Wait for animation to finish, then remove sprites
+            pig.pigSpi.remove();
+            pig.hitBoxPig.remove();
+          }
+          if (pig.pigSpi.removed && pig.hitBoxPig.removed) {
+            this.pigs.splice(i, 1);
+          }
         }
       }
-      this.player.doAll(this.walls, this.pig);
+      this.player.doAll(this.walls, this.pigs); // Pass all pigs
     }
   }
 
