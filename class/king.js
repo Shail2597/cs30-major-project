@@ -110,8 +110,11 @@ class King {
             const dx = pig.getX() - this.hitBox.x;
             const dy = pig.getY() - this.hitBox.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < PLAYER_ATTACK_RANGE) {
-              pig.takeHit();
+            // Only attack if pig is in range AND in facing direction
+            const facingRight = !this.spi.mirror.x;
+            const pigIsInFront = facingRight && dx > 0 || !facingRight && dx < 0;
+            if (dist < PLAYER_ATTACK_RANGE && pigIsInFront) {
+              pig.takeHit(this.hitBox.x);
             }
           }
         }
@@ -153,8 +156,32 @@ class King {
     }
 
     // Reset jump when on ground and falling or not moving up
-    if (this.hitBoxJump.overlap(walls) && this.hitBox.vel.y >= 0) {
+    let onGround = this.hitBoxJump.overlap(walls) && this.hitBox.vel.y >= 0;
+    let onPig = false;
+    if (Array.isArray(pigs)) {
+      for (const pig of pigs) {
+        if (pig && pig.hitBoxPig && this.hitBoxJump.overlap(pig.hitBoxPig) && this.hitBox.vel.y >= 0) {
+          onPig = true;
+          break;
+        }
+      }
+    }
+    if (onGround || onPig) {
       this.isJumping = false;
+    }
+
+    // --- King stomps pig from above ---
+    if (Array.isArray(pigs)) {
+      for (const pig of pigs) {
+        if (
+          pig && pig.hitBoxPig &&
+          this.hitBoxJump.overlap(pig.hitBoxPig) &&
+          this.hitBox.vel.y > 0 // King is falling
+        ) {
+          pig.takeHit(this.hitBox.x);
+          this.hitBox.vel.y = -8; // Bounce King upward
+        }
+      }
     }
 
     if (mouseIsPressed) {
@@ -182,7 +209,7 @@ class King {
     else {
       this.hitBoxJump.color = color(0,0,255,100); // blue otherwise
     }
-    this.hitBoxJump.position.y = this.hitBox.position.y + (this.hitBox.height / 2) + (this.hitBoxJump.height / 2);
+    this.hitBoxJump.position.y = this.hitBox.position.y + this.hitBox.height / 2 + this.hitBoxJump.height / 2;
     this.hitBoxJump.visible = true; 
   }
 
@@ -195,7 +222,9 @@ class King {
   }
 
   takeDamage(attackerX) {
-    if (this.hitCooldown > 0 || this.health <= 0) return;
+    if (this.hitCooldown > 0 || this.health <= 0) {
+      return;
+    }
     this.health--;
     this.spi.changeAni('hit');
     this.hitCooldown = 20; // was 30, now more responsive

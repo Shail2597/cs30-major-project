@@ -106,7 +106,7 @@ class Pig {
     // Knockback: push pig away from attacker (king)
     if (typeof attackerX === "number") {
       const direction = this.hitBoxPig.x < attackerX ? -1 : 1;
-      this.hitBoxPig.vel.x = direction * 12;
+      this.hitBoxPig.vel.x = direction * 18; // Increased from 12 to 18
     }
 
     if (this.health <= 0) {
