@@ -8820,10 +8820,6 @@ let p5playInit = function () {
 	};
 
 	// playIntro function removed
-			logo.src = src;
-		} else {
-			logo.src = 'https://p5play.org/assets/made_with_p5play.webp';
-		}
 		await new Promise((r) => (logo.onload = r));
 		d.append(logo);
 		document.body.append(d);
