@@ -56,10 +56,9 @@ async function shailIntro() {
 
 
 
-let p5playInit = function () {
-	// START p5play.d.ts
-
+let p5playInit = async function () {
 	await shailIntro();
+	// START p5play.d.ts
   const $ = this; // the p5 or q5 instance that called p5playInit
 	const pl = planck;
 
