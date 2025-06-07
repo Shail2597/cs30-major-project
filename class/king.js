@@ -178,8 +178,11 @@ class King {
           this.hitBoxJump.overlap(pig.hitBoxPig) &&
           this.hitBox.vel.y > 0 // King is falling
         ) {
-          pig.takeHit(this.hitBox.x);
-          this.hitBox.vel.y = -8; // Bounce King upward
+          // Only stomp if falling fast enough
+          if (this.hitBox.vel.y > 7) { // Adjust threshold as needed
+            pig.takeHit(this.hitBox.x);
+            this.hitBox.vel.y = -3; // REMOVE bounce after stomping
+          }
         }
       }
     }
