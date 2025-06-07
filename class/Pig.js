@@ -56,17 +56,59 @@ class Pig {
     }
 
     if (this.activated) {
+      // --- SMART PLATFORMER ENEMY AI START ---
+      const onGround = this.hitBoxPig.vel.y === 0;
+
+      // Only jump if king is above AND pig is blocked by a wall or edge
+      let shouldJump = false;
+
+      // 1. King is above and horizontally close
+      const kingIsAbove = dy < -30; // king is higher than pig
+      const kingIsCloseX = Math.abs(dx) < 60;
+
+      // 2. Pig is blocked by wall or at edge (no ground ahead)
+      let wallInFront = false;
+      let edgeAhead = false;
+      if (typeof allSprites !== "undefined") {
+        // Check for wall in front
+        const checkX = this.hitBoxPig.x + Math.sign(dx) * 20;
+        const checkY = this.hitBoxPig.y + 10;
+        wallInFront = allSprites.some(s =>
+          s !== this.hitBoxPig &&
+          s.collider === "static" &&
+          Math.abs(s.x - checkX) < 20 &&
+          Math.abs(s.y - checkY) < 30
+        );
+
+        // Check for edge: is there ground ahead?
+        const groundCheckX = this.hitBoxPig.x + Math.sign(dx) * 20;
+        const groundCheckY = this.hitBoxPig.y + 30;
+        edgeAhead = !allSprites.some(s =>
+          s !== this.hitBoxPig &&
+          s.collider === "static" &&
+          Math.abs(s.x - groundCheckX) < 20 &&
+          Math.abs(s.y - groundCheckY) < 10
+        );
+      }
+
+      // Only jump if king is above AND (wall in front OR edge ahead)
+      if (onGround && kingIsAbove && kingIsCloseX && (wallInFront || edgeAhead)) {
+        this.hitBoxPig.vel.y = -7;
+        this.isJumping = true;
+      }
+
+      // --- SMART PLATFORMER ENEMY AI END ---
+
+      // Move horizontally toward king if not attacking
       if (distToPlayer > PIG_ATTACK_RANGE) {
         const angle = Math.atan2(dy, dx);
         this.hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
         this.isAttacking = false;
-      }
-      else {
+      } else {
         this.hitBoxPig.vel.x = 0;
         this.isAttacking = true;
       }
-    }
-    else {
+    } else {
       this.hitBoxPig.vel.x = 0;
       this.isAttacking = false;
     }
