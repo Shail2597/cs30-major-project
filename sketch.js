@@ -11,28 +11,7 @@ let btnMapEditor, btnAdventure, btnMapLoader;
 // Pause/Key‐Binds UI:
 let backButtonKB;
 
-async function showIntro() {
-  const div = document.createElement('div');
-  div.id = 'intro';
-  div.style = `
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: black; display: flex; align-items: center; justify-content: center;
-    z-index: 9999; opacity: 1; transition: opacity 1s ease-out;
-  `;
-  const img = document.createElement('img');
-  img.src = 'asset/Kings and Pigs.png';
-  img.style = 'max-width:60vw;max-height:60vh;';
-  div.appendChild(img);
-  document.body.appendChild(div);
-  await new Promise(r => setTimeout(r, 1000));
-  div.style.opacity = '0';
-  await new Promise(r => setTimeout(r, 1000));
-  div.remove();
-}
-
-async function preload() {
-  await showIntro();
+function preload() {
   introImg = loadImage("asset/introWindow.png");
 
   // Prepare MapGenerator and MapLoader:
@@ -144,9 +123,7 @@ function styleButton(btn) {
 
 function removeIntroButtons() {
   [btnMapEditor, btnAdventure, btnMapLoader].forEach(btn => {
-    if (btn) {
-      btn.remove();
-    }
+    if (btn) btn.remove();
   });
   btnMapEditor = btnAdventure = btnMapLoader = null;
 }
@@ -165,12 +142,8 @@ function keyPressed() {
     // *** Hide MapLoader UI and all sprites when pausing ***
     if (prevState === "mapLoader") {
       // Hide the “Load Map” and “Back” buttons from MapLoader (created here :contentReference[oaicite:1]{index=1})
-      if (ml.loadBtn) {
-        ml.loadBtn.hide();
-      }
-      if (ml.backBtn) {
-        ml.backBtn.hide();
-      }
+      if (ml.loadBtn) ml.loadBtn.hide();
+      if (ml.backBtn) ml.backBtn.hide();
       // Hide every sprite (King, pigs, walls, colliders):
       // p5.play exposes a global `allSprites` Group
       allSprites.visible = false;
@@ -219,12 +192,8 @@ function setupKeyBindsScreen() {
       prevState = null;
 
       // *** Un‐pause: show MapLoader’s buttons and sprites again ***
-      if (ml.loadBtn) {
-        ml.loadBtn.show();
-      }
-      if (ml.backBtn) {
-        ml.backBtn.show();
-      }
+      if (ml.loadBtn) ml.loadBtn.show();
+      if (ml.backBtn) ml.backBtn.show();
       allSprites.visible = true;
     }
     else if (prevState === "mapEditor") {
