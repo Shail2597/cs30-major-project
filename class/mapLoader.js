@@ -106,24 +106,28 @@ class MapLoader {
     pop();
 
     if (this.player && this.player.hitBox) {
-      if (this.pigs && this.player?.hitBox) {
-        // Loop backwards to safely remove items
-        for (let i = this.pigs.length - 1; i >= 0; i--) {
-          const pig = this.pigs[i];
-          pig.doAll(this.player.getX(), this.player.getY(), this.player);
-          
-          // Remove pig from array if both sprites are removed (after death animation)
-          if (pig.dead && (!pig.pigSpi.removed && pig.pigSpi.ani?.name === 'death' && pig.pigSpi.ani.frame === pig.pigSpi.ani.lastFrame)) {
-            // Wait for animation to finish, then remove sprites
-            pig.pigSpi.remove();
-            pig.hitBoxPig.remove();
+      // Clean up any null pigs first
+      if (this.pigs) {
+        this.pigs = this.pigs.filter(pig => pig && pig.pigSpi && pig.hitBoxPig);
+      }
+
+      if (this.pigs && this.pigs.length > 0) {
+        // Only update pigs if player is not dead
+        if (!this.player.isDead) {
+          for (const pig of this.pigs) {
+            pig.doAll(this.player.getX(), this.player.getY(), this.player);
           }
-          if (pig.pigSpi.removed && pig.hitBoxPig.removed) {
-            this.pigs.splice(i, 1);
+        } else {
+          // If player is dead, just draw the pigs in their current state
+          for (const pig of this.pigs) {
+            if (pig && pig.pigSpi) {
+              pig.pigSpi.update();
+              pig.pigSpi.draw();
+            }
           }
         }
       }
-      this.player.doAll(this.walls, this.pigs); // Pass all pigs
+      this.player.doAll(this.walls, this.pigs);
     }
   }
   drawGrid() {

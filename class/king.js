@@ -7,6 +7,9 @@ const tileSize = 64;
 const PLAYER_ATTACK_COOLDOWN = 30;
 const PLAYER_ATTACK_RANGE = 50;
 
+const MAX_LIVES = 3;
+const MAX_HITS = 5;
+
 class King {
   constructor() {
     this.isJumping = false;
@@ -15,9 +18,19 @@ class King {
     this.hitBoxJump = null;
     this.attackCooldown = 0;
     this.isAttacking = false;
-    this.health = 3;
+    this.health = MAX_HITS;  // Changed from 3 to MAX_HITS
     this.hitCooldown = 0;
     this.attackTimer = 0;
+    this.lives = MAX_LIVES;  // Add lives counter
+    this.isDead = false;     // Add permanent death state
+    this.isSpawning = true; // Add this line
+    this.spawnPosition = null;  // Add this line
+
+    // Add these properties to the constructor
+    this.spawnX = null;
+    this.spawnY = null;
+    this.initialX = null;
+    this.initialY = null;
   }
 
   pre(spriteSheet) {
@@ -51,25 +64,78 @@ class King {
     this.hitBox.collider = "DYNAMIC";
     this.spi.visible = true;
 
+    // Store initial spawn position AFTER the door_in animation
+    setTimeout(() => {
+      this.spawnPosition = {
+        x: this.hitBox.position.x,
+        y: this.hitBox.position.y
+      };
+      this.isSpawning = false;
+      this.spi.changeAni('idle');
+    }, 1000); // 1 second spawn animation
+
+    // Store initial spawn position right after creating the hitBox
+    this.initialX = this.hitBox.position.x;
+    this.initialY = this.hitBox.position.y;
+
     allSprites.pixelPerfect = true;
     allSprites.visible = true;
+
+    // After setting up sprites, trigger spawn animation
+    this.spi.changeAni('door_in');
+    this.spi.ani.frame = 0;
+    setTimeout(() => {
+      this.isSpawning = false;
+      this.spi.changeAni('idle');
+    }, 1000); // 1 second spawn animation
   }
 
   respawn() {
-    this.isJumping = true;
-    const gridW = cols * tileSize;
-    const gridH = rows * tileSize;
-    const offsetX = (width - gridW) / 2;
-    const offsetY = (height - gridH) / 2;
+    if (this.lives <= 0) {
+      this.isDead = true;
+      this.spi.changeAni('dead');
+      this.spi.ani.frame = this.spi.ani.lastFrame;
+      return false;
+    }
 
-    this.hitBox.position.x = offsetX + gridW / 2;
-    this.hitBox.position.y = offsetY + gridH / 2;
+    this.isSpawning = true;
     this.isJumping = false;
-    this.health = 3;
+    
+    // Return to spawn position (where the king appeared after door_in animation)
+    if (this.spawnPosition) {
+      this.hitBox.position.x = this.spawnPosition.x;
+      this.hitBox.position.y = this.spawnPosition.y;
+    } else {
+      // Fallback to center if spawn position not set
+      const gridW = cols * tileSize;
+      const gridH = rows * tileSize;
+      const offsetX = (width - gridW) / 2;
+      const offsetY = (height - gridH) / 2;
+      this.hitBox.position.x = offsetX + gridW / 2;
+      this.hitBox.position.y = offsetY + gridH / 2;
+    }
+
+    // Reset state
+    this.health = MAX_HITS;
     this.hitCooldown = 0;
+    this.spi.changeAni('door_in');
+    this.spi.ani.frame = 0;
+    this.hitBox.vel.x = 0;
+    this.hitBox.vel.y = 0;
+    
+    // Add delay before player can move
+    setTimeout(() => {
+      this.isSpawning = false;
+      this.spi.changeAni('idle');
+    }, 1000);
+    
+    return true;
   }
 
   handleInput(walls, pigs) {
+    // Don't process input if dead or spawning
+    if (this.isDead || this.isSpawning) return;
+
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
     }
@@ -208,13 +274,13 @@ class King {
   }
 
   takeDamage(attackerX) {
-    if (this.hitCooldown > 0 || this.health <= 0) {
+    if (this.hitCooldown > 0 || this.isDead) {
       return;
     }
 
     this.health--;
     this.spi.changeAni('hit');
-    this.spi.ani.frame = 0;  // Reset animation frame
+    this.spi.ani.frame = 0;
     this.hitCooldown = 20;
 
     if (typeof attackerX === "number") {
@@ -223,7 +289,31 @@ class King {
     }
 
     if (this.health <= 0) {
+      this.lives--;
       this.spi.changeAni('dead');
+      this.spi.ani.frame = 0;
+
+      if (this.lives > 0) {
+        // Let death animation complete once before respawning
+        const deathAnimDuration = this.spi.ani.frameDelay * this.spi.ani.frames;
+        this.spi.ani.play = true;
+        
+        setTimeout(() => {
+          this.respawn();
+        }, deathAnimDuration);
+      } else {
+        // For final death, play animation once then freeze on last frame
+        this.isDead = true;
+        const deathAnimDuration = this.spi.ani.frameDelay * this.spi.ani.frames;
+        this.spi.ani.play = true;
+        
+        setTimeout(() => {
+          this.spi.ani.play = false;
+          this.spi.ani.frame = this.spi.ani.lastFrame;
+          this.hitBox.vel.x = 0;
+          this.hitBox.vel.y = 0;
+        }, deathAnimDuration);
+      }
     }
   }
 
@@ -237,14 +327,33 @@ class King {
     if (!this.hitBox || !this.spi) {
       return;
     }
+
+    // If permanently dead, update sprite position but stop all other updates
+    if (this.isDead) {
+      if (this.spi.mirror.x) {
+        this.spi.position.x = this.hitBox.position.x - 18;
+        this.spi.position.y = this.hitBox.position.y - 24;
+      } else {
+        this.spi.position.x = this.hitBox.position.x + 18;
+        this.spi.position.y = this.hitBox.position.y - 24;
+      }
+      this.spi.update();
+      this.spi.draw();
+      this.spi.scale = 2;
+
+      // Stop physics simulation when dead
+      this.hitBox.vel.x = 0;
+      this.hitBox.vel.y = 0;
+      return;
+    }
+
     this.handleInput(walls, pigs);
 
     // Update sprite position
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
       this.spi.position.y = this.hitBox.position.y - 24;
-    }
-    else {
+    } else {
       this.spi.position.x = this.hitBox.position.x + 18;
       this.spi.position.y = this.hitBox.position.y - 24;
     }

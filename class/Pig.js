@@ -190,23 +190,59 @@ class Pig {
   }
 
   doAll(playerX, playerY, playerObj) {
+    // Check if pig is already destroyed
+    if (!this.pigSpi || !this.hitBoxPig) {
+      return;
+    }
+
+    // Check if pig is dead
+    if (this.dead) {
+      // Update position for final death animation
+      this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
+      this.pigSpi.position.y = this.hitBoxPig.position.y - 6.5;
+      
+      // Only continue if we're still showing death animation
+      if (this.pigSpi.ani?.name === 'death') {
+        if (this.pigSpi.ani.frame >= this.pigSpi.ani.lastFrame) {
+          // Once death animation completes, destroy the pig
+          this.destroy();
+          return;
+        }
+        
+        // Draw the final frames of death animation
+        this.pigSpi.scale = 1.7;
+        this.pigSpi.update();
+        this.pigSpi.draw();
+        return;
+      }
+    }
+
+    // If player is dead, freeze the pig's animation and movement
+    if (playerObj.isDead) {
+      this.hitBoxPig.vel.x = 0;
+      this.hitBoxPig.vel.y = 0;
+      if (this.pigSpi.ani) {
+        this.pigSpi.ani.play = false;
+      }
+      this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
+      this.pigSpi.position.y = this.hitBoxPig.position.y - 6.5;
+      this.pigSpi.scale = 1.7;
+      this.pigSpi.update();
+      this.pigSpi.draw();
+      return;
+    }
+
+    // Normal behavior when player is alive
     this.move(playerX, playerY);
     this.handleAttack(playerObj);
     this.handleAnimations();
     this.colliderAndhitBox();
 
-    // Update hitbox position
     this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
     this.pigSpi.position.y = this.hitBoxPig.position.y - 6.5;
-
+    this.pigSpi.scale = 1.7;
     this.pigSpi.update();
     this.pigSpi.draw();
-    this.pigSpi.scale = 1.7;
-
-    if (this.dead && this.pigSpi.ani?.name === 'death' && this.pigSpi.ani.frame === this.pigSpi.ani.lastFrame) {
-      this.pigSpi.remove();
-      this.hitBoxPig.remove();
-    }
   }
 
   getX() {
@@ -217,8 +253,10 @@ class Pig {
   }
 
   destroy() {
-    this.pigSpi?.remove(); this.pigSpi = null;
-    this.hitBoxPig?.remove(); this.hitBoxPig = null;
+    this.hitBoxPig?.remove();
+    this.hitBoxPig = null;
+    this.pigSpi?.remove();
+    this.pigSpi = null;
   }
 }
 
