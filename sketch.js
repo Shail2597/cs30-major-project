@@ -11,26 +11,6 @@ let btnMapEditor, btnAdventure, btnMapLoader;
 // Pause/Key‐Binds UI:
 let backButtonKB;
 
-async function showIntro() {
-  const div = document.createElement('div');
-  div.id = 'shail-intro';
-  div.style = `
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: black; display: flex; align-items: center; justify-content: center;
-    z-index: 9999; opacity: 1; transition: opacity 1s ease-out;
-  `;
-  const img = document.createElement('img');
-  img.src = 'asset/Kings and Pigs.png';
-  img.style = 'max-width:60vw;max-height:60vh;';
-  div.appendChild(img);
-  document.body.appendChild(div);
-  await new Promise(r => setTimeout(r, 1000));
-  div.style.opacity = '0';
-  await new Promise(r => setTimeout(r, 1000));
-  div.remove();
-}
-
 function preload() {
   introImg = loadImage("asset/introWindow.png");
 

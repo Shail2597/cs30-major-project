@@ -104,13 +104,11 @@ class Pig {
         const angle = Math.atan2(dy, dx);
         this.hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
         this.isAttacking = false;
-      }
-      else {
+      } else {
         this.hitBoxPig.vel.x = 0;
         this.isAttacking = true;
       }
-    }
-    else {
+    } else {
       this.hitBoxPig.vel.x = 0;
       this.isAttacking = false;
     }
