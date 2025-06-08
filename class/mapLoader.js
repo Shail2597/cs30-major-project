@@ -111,6 +111,7 @@ class MapLoader {
         for (let i = this.pigs.length - 1; i >= 0; i--) {
           const pig = this.pigs[i];
           pig.doAll(this.player.getX(), this.player.getY(), this.player);
+          
           // Remove pig from array if both sprites are removed (after death animation)
           if (pig.dead && (!pig.pigSpi.removed && pig.pigSpi.ani?.name === 'death' && pig.pigSpi.ani.frame === pig.pigSpi.ani.lastFrame)) {
             // Wait for animation to finish, then remove sprites
@@ -125,7 +126,6 @@ class MapLoader {
       this.player.doAll(this.walls, this.pigs); // Pass all pigs
     }
   }
-
   drawGrid() {
     noStroke();
     fill(255);

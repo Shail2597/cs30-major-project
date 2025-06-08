@@ -1,18 +1,18 @@
 const PIG_ACTIVATION_DISTANCE = 250;
 const PIG_SPEED = 2.2;
-const PIG_ATTACK_RANGE = 40;
-const PIG_ATTACK_COOLDOWN = 60; // frames (1 second at 60fps)
+const PIG_ATTACK_RANGE = 45;  // Slightly increased
+const PIG_ATTACK_COOLDOWN = 45;  // Slightly decreased
 const PIG_MAX_HEALTH = 3;
 
 class Pig {
-  constructor(x = windowWidth/2 + windowWidth/4, y = windowHeight/2) {
+  constructor(x = windowWidth / 2 + windowWidth / 4, y = windowHeight / 2) {
     this.isJumping = false;
     this.activated = false;
     this.isAttacking = false;
     this.attackCooldown = 0;
     this.health = PIG_MAX_HEALTH;
     this.dead = false;
-    this.hitCooldown = 0; // Prevents taking multiple hits instantly
+    this.hitCooldown = 0;
     this.spawnX = x;
     this.spawnY = y;
     this.pigSpi = null;
@@ -34,10 +34,10 @@ class Pig {
       attack: { row: 7, frames: 5, frameDelay: 6 }
     });
     this.pigSpi.changeAni('idle');
-    allSprites.pixelPerfect = true;
     this.hitBoxPig.rotationLock = true;
     this.pigSpi.rotationLock = true;
-    this.hitBoxPig.collider = "dynamic";
+    this.hitBoxPig.collider = "dynamic";  // Keep this as dynamic
+    this.hitBoxPig.debug = true;
     this.pigSpi.visible = false;
     this.hitBoxPig.visible = true;
   }
@@ -47,6 +47,7 @@ class Pig {
       this.hitBoxPig.vel.x = 0;
       return;
     }
+
     const dx = playerX - this.hitBoxPig.x;
     const dy = playerY - this.hitBoxPig.y;
     const distToPlayer = Math.sqrt(dx * dx + dy * dy);
@@ -56,75 +57,76 @@ class Pig {
     }
 
     if (this.activated) {
-      // --- SMART PLATFORMER ENEMY AI START ---
       const onGround = this.hitBoxPig.vel.y === 0;
-
-      // Only jump if king is above AND pig is blocked by a wall or edge
-      let shouldJump = false;
-
-      // 1. King is above and horizontally close
-      const kingIsAbove = dy < -30; // king is higher than pig
+      const kingIsAbove = dy < -30;
       const kingIsCloseX = Math.abs(dx) < 60;
 
-      // 2. Pig is blocked by wall or at edge (no ground ahead)
       let wallInFront = false;
       let edgeAhead = false;
-      if (typeof allSprites !== "undefined") {
-        // Check for wall in front
-        const checkX = this.hitBoxPig.x + Math.sign(dx) * 20;
-        const checkY = this.hitBoxPig.y + 10;
-        wallInFront = allSprites.some(s =>
-          s !== this.hitBoxPig &&
-          s.collider === "static" &&
-          Math.abs(s.x - checkX) < 20 &&
-          Math.abs(s.y - checkY) < 30
-        );
 
-        // Check for edge: is there ground ahead?
-        const groundCheckX = this.hitBoxPig.x + Math.sign(dx) * 20;
-        const groundCheckY = this.hitBoxPig.y + 30;
-        edgeAhead = !allSprites.some(s =>
-          s !== this.hitBoxPig &&
-          s.collider === "static" &&
-          Math.abs(s.x - groundCheckX) < 20 &&
-          Math.abs(s.y - groundCheckY) < 10
-        );
-      }
+      const checkX = this.hitBoxPig.x + Math.sign(dx) * 20;
+      const checkY = this.hitBoxPig.y + 10;
+      const groundCheckY = this.hitBoxPig.y + 30;
 
-      // Only jump if king is above AND (wall in front OR edge ahead)
+      wallInFront = allSprites.some(s => s !== this.hitBoxPig && s.collider === "static" && Math.abs(s.x - checkX) < 20 && Math.abs(s.y - checkY) < 30);
+      edgeAhead = !allSprites.some(s => s !== this.hitBoxPig && s.collider === "static" && Math.abs(s.x - checkX) < 20 && Math.abs(s.y - groundCheckY) < 10);
+
       if (onGround && kingIsAbove && kingIsCloseX && (wallInFront || edgeAhead)) {
         this.hitBoxPig.vel.y = -7;
         this.isJumping = true;
       }
 
-      // --- SMART PLATFORMER ENEMY AI END ---
-
-      // Move horizontally toward king if not attacking
-      if (distToPlayer > PIG_ATTACK_RANGE) {
-        const angle = Math.atan2(dy, dx);
-        this.hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
-        this.isAttacking = false;
-      } else {
+      // Improve attack range check
+      if (distToPlayer < PIG_ATTACK_RANGE) {
         this.hitBoxPig.vel.x = 0;
         this.isAttacking = true;
       }
-    } else {
+      else if (distToPlayer < PIG_ATTACK_RANGE + 30) {
+        // Approach slowly when near attack range
+        const angle = Math.atan2(dy, dx);
+        this.hitBoxPig.vel.x = Math.cos(angle) * (PIG_SPEED * 0.5);
+        this.isAttacking = false;
+      }
+      else {
+        const angle = Math.atan2(dy, dx);
+        this.hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
+        this.isAttacking = false;
+      }
+
+      this.pigSpi.mirror.x = dx > 0;
+    }
+    else {
       this.hitBoxPig.vel.x = 0;
       this.isAttacking = false;
     }
   }
 
   handleAttack(playerObj) {
-    if (this.dead) {
+    if (this.dead || !playerObj || !playerObj.hitBox) {
       return;
     }
-    if (this.isAttacking && this.attackCooldown <= 0) {
+
+    const dx = playerObj.hitBox.x - this.hitBoxPig.x;
+    const dy = playerObj.hitBox.y - this.hitBoxPig.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Only start new attack if:
+    // 1. In attack mode
+    // 2. Cooldown is done
+    // 3. Within range
+    // 4. Not currently in attack animation
+    if (
+      this.isAttacking && 
+      this.attackCooldown <= 0 &&
+      distance < PIG_ATTACK_RANGE &&
+      this.pigSpi.ani?.name !== 'attack'
+    ) {
       this.pigSpi.changeAni('attack');
-      if (playerObj && typeof playerObj.takeDamage === "function") {
-        playerObj.takeDamage(this.hitBoxPig.x);
-      }
+      playerObj.takeDamage(this.hitBoxPig.x);
       this.attackCooldown = PIG_ATTACK_COOLDOWN;
     }
+
+    // Update cooldowns
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
     }
@@ -137,19 +139,14 @@ class Pig {
     if (this.dead || this.hitCooldown > 0) {
       return;
     }
-    
     this.health--;
-    this.hitCooldown = 20; // brief invulnerability
+    this.hitCooldown = 20;
     this.pigSpi.changeAni('hit');
-    
-    // Force animation to start from beginning
     this.pigSpi.ani.frame = 0;
 
-    // Knockback: push pig away from attacker (king)
-    if (typeof attackerX === "number") {
-      const direction = this.hitBoxPig.x < attackerX ? -1 : 1;
-      this.hitBoxPig.vel.x = direction * 18; // Increased from 12 to 18
-    }
+    const direction = this.hitBoxPig.x < attackerX ? -1 : 1;
+    this.hitBoxPig.vel.x = direction * 24; // Increased from 18 to 24
+    this.hitBoxPig.vel.y = -3; // Add small upward bounce
 
     if (this.health <= 0) {
       this.dead = true;
@@ -159,8 +156,8 @@ class Pig {
 
   colliderAndhitBox() {
     this.pigSpi.collider = "NONE";
-    this.pigSpi.position.x = this.hitBoxPig.position.x-2;
-    this.pigSpi.position.y = this.hitBoxPig.position.y-6.5;
+    this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
+    this.pigSpi.position.y = this.hitBoxPig.position.y - 6.5;
   }
 
   handleAnimations() {
@@ -168,25 +165,21 @@ class Pig {
       return;
     }
 
-    // Handle hit animation with proper state tracking
-    if (this.pigSpi.ani?.name === 'hit') {
-      if (this.pigSpi.ani.frame < this.pigSpi.ani.lastFrame) {
-        return; // Keep playing hit animation until it's done
-      }
+    // Priority handling for animations
+    if (this.pigSpi.ani?.name === 'attack' && this.pigSpi.ani.frame < this.pigSpi.ani.lastFrame) {
+      return; // Let attack animation finish
+    }
+    if (this.pigSpi.ani?.name === 'hit' && this.pigSpi.ani.frame < this.pigSpi.ani.lastFrame) {
+      return; // Let hit animation finish
     }
 
-    // After hit animation is done or for other states
     if (this.hitCooldown > 0) {
-      // Force hit animation to play
-      if (this.pigSpi.ani?.name !== 'hit') {
-        this.pigSpi.changeAni('hit');
-      }
-      return;
+      this.pigSpi.changeAni('hit');
     }
-
-    // Regular animation states
-    if (this.isAttacking) {
-      this.pigSpi.changeAni('attack');
+    else if (this.isAttacking && this.attackCooldown <= 0) {
+      if (this.pigSpi.ani?.name !== 'attack') {
+        this.pigSpi.changeAni('attack');
+      }
     }
     else if (Math.abs(this.hitBoxPig.vel.x) > 0.1) {
       this.pigSpi.changeAni('run');
@@ -194,59 +187,38 @@ class Pig {
     else {
       this.pigSpi.changeAni('idle');
     }
-
-    // Handle movement direction
-    if (this.hitBoxPig.vel.x > 0.1) {
-      this.pigSpi.mirror.x = true;
-    }
-    else if (this.hitBoxPig.vel.x < -0.1) {
-      this.pigSpi.mirror.x = false;
-    }
   }
 
   doAll(playerX, playerY, playerObj) {
-    if (!this.pigSpi) {
-      return;
-    }
     this.move(playerX, playerY);
     this.handleAttack(playerObj);
     this.handleAnimations();
     this.colliderAndhitBox();
 
-    // If dead, play death animation then remove
-    if (this.dead) {
-      this.pigSpi.update();
-      this.pigSpi.draw();
-      this.pigSpi.scale = 1.7;
-      // Remove after death animation finishes
-      if (this.pigSpi.ani?.name === 'death' && this.pigSpi.ani.frame === this.pigSpi.ani.lastFrame) {
-        this.pigSpi.remove();
-        this.hitBoxPig.remove();
-      }
-      return;
-    }
+    // Update hitbox position
+    this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
+    this.pigSpi.position.y = this.hitBoxPig.position.y - 6.5;
 
     this.pigSpi.update();
     this.pigSpi.draw();
     this.pigSpi.scale = 1.7;
+
+    if (this.dead && this.pigSpi.ani?.name === 'death' && this.pigSpi.ani.frame === this.pigSpi.ani.lastFrame) {
+      this.pigSpi.remove();
+      this.hitBoxPig.remove();
+    }
   }
 
   getX() {
-    return this.hitBoxPig.x;
+    return this.hitBoxPig.x; 
   }
   getY() {
-    return this.hitBoxPig.y;
+    return this.hitBoxPig.y; 
   }
 
   destroy() {
-    if (this.pigSpi && typeof this.pigSpi.remove === 'function') {
-      this.pigSpi.remove();
-      this.pigSpi = null;
-    }
-    if (this.hitBoxPig && typeof this.hitBoxPig.remove === 'function') {
-      this.hitBoxPig.remove();
-      this.hitBoxPig = null;
-    }
+    this.pigSpi?.remove(); this.pigSpi = null;
+    this.hitBoxPig?.remove(); this.hitBoxPig = null;
   }
 }
 

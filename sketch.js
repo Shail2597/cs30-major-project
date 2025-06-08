@@ -123,7 +123,9 @@ function styleButton(btn) {
 
 function removeIntroButtons() {
   [btnMapEditor, btnAdventure, btnMapLoader].forEach(btn => {
-    if (btn) btn.remove();
+    if (btn) {
+      btn.remove();
+    }
   });
   btnMapEditor = btnAdventure = btnMapLoader = null;
 }
@@ -142,8 +144,12 @@ function keyPressed() {
     // *** Hide MapLoader UI and all sprites when pausing ***
     if (prevState === "mapLoader") {
       // Hide the “Load Map” and “Back” buttons from MapLoader (created here :contentReference[oaicite:1]{index=1})
-      if (ml.loadBtn) ml.loadBtn.hide();
-      if (ml.backBtn) ml.backBtn.hide();
+      if (ml.loadBtn) {
+        ml.loadBtn.hide();
+      }
+      if (ml.backBtn) {
+        ml.backBtn.hide();
+      }
       // Hide every sprite (King, pigs, walls, colliders):
       // p5.play exposes a global `allSprites` Group
       allSprites.visible = false;
@@ -185,15 +191,19 @@ function setupKeyBindsScreen() {
       backButtonKB.remove();
       backButtonKB = null;
     }
-
+    
     // If we paused from mapLoader, restore its UI and sprites:
     if (prevState === "mapLoader") {
       state = "mapLoader";
       prevState = null;
 
       // *** Un‐pause: show MapLoader’s buttons and sprites again ***
-      if (ml.loadBtn) ml.loadBtn.show();
-      if (ml.backBtn) ml.backBtn.show();
+      if (ml.loadBtn) {
+        ml.loadBtn.show();
+      }
+      if (ml.backBtn) {
+        ml.backBtn.show();
+      }
       allSprites.visible = true;
     }
     else if (prevState === "mapEditor") {
@@ -222,3 +232,4 @@ function mousePressed() {
     ml.mousePressed && ml.mousePressed();
   }
 }
+
