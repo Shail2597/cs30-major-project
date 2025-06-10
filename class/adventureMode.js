@@ -103,7 +103,9 @@ class AdventureMode {
   }
 
   completeLevel() {
-    if (this.isTransitioning) return;
+    if (this.isTransitioning) {
+      return;
+    }
     
     this.isTransitioning = true;
     console.log("Completing level:", this.currentMap); // Debug log
@@ -158,9 +160,9 @@ class AdventureMode {
         const exitY = this.offsetY + exitRow * this.tileSize;
 
         // Define a MUCH larger exit zone
-        const zoneLeft = rightX - (this.tileSize * 8);    // 8 tiles wide
+        const zoneLeft = rightX - this.tileSize * 8;    // 8 tiles wide
         const zoneRight = rightX + this.tileSize;
-        const zoneTop = exitY - (this.tileSize * 6);      // 6 tiles up
+        const zoneTop = exitY - this.tileSize * 6;      // 6 tiles up
         const zoneBottom = exitY + this.tileSize * 2;     // 2 tiles down
 
         const playerX = this.player.getX();
@@ -191,7 +193,9 @@ class AdventureMode {
     if (this.walls) {
       // Remove all wall sprites
       for (let wall of this.walls) {
-        if (wall) wall.remove();
+        if (wall) {
+          wall.remove();
+        }
       }
       this.walls = new Group();
     }
