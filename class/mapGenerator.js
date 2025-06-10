@@ -79,15 +79,24 @@ class MapGenerator {
   }
 
   _placeTile() {
-    if (mouseX < width && mouseY < height && this.current) {
+    if (mouseX < width && mouseY < height) {
       const gx = floor(mouseX / this.TILE_SIZE);
       const gy = floor(mouseY / this.TILE_SIZE);
       if (gx >= 0 && gx < this.COLS && gy >= 0 && gy < this.ROWS) {
-        this.layers[this.mode][gy][gx] = this.current;
-        this._checkComplete();
+        if (this.mode === 'erase') {
+          // Clear both layers at this cell
+          this.layers.base[gy][gx]       = null;
+          this.layers.decoration[gy][gx] = null;
+        }
+        else if (this.current) {
+          // Place a tile normally
+          this.layers[this.mode][gy][gx] = this.current;
+          this._checkComplete();
+        }
       }
     }
   }
+
 
   _drawLayer(name) {
     for (let y = 0; y < this.ROWS; y++) {
@@ -157,6 +166,12 @@ class MapGenerator {
       .attribute('disabled','').size(100,40).style('background-color', '#3E3850').style('color','#ffffff').style('border', 'none').style('border-radius','6px').style('font-size', '16px').style('font-family', 'Ariel, sans-serif').style('cursor', 'pointer').mouseClicked(() => this._save());
     this.backBtn = createButton('Back').parent(this.controls)
       .size(100,40).style('background-color', '#3E3850').style('color','#ffffff').style('border', 'none').style('border-radius','6px').style('font-size', '16px').style('font-family', 'Ariel, sans-serif').style('cursor', 'pointer').mouseClicked(() => location.reload());
+    this.eraseBtn = createButton('Erase').parent(this.controls)
+      .size(100, 40).style('background-color', '#a00').style('color', '#fff').style('border', 'none').style('border-radius', '6px').style('font-size', '16px').style('font-family', 'Arial, sans-serif').style('cursor', 'pointer').mouseClicked(() => {
+        this.mode = 'erase';
+      });
+    this.eraseBtn.mouseOver(() => this.eraseBtn.style('background-color', '#c33'));
+    this.eraseBtn.mouseOut(() => this.eraseBtn.style('background-color', '#a00'));
 
     this.saveBtn.mouseOver(() => {
       this.saveBtn.style('background-color', '#8541ee');

@@ -18,15 +18,14 @@ class King {
     this.hitBoxJump = null;
     this.attackCooldown = 0;
     this.isAttacking = false;
-    this.health = MAX_HITS;  // Changed from 3 to MAX_HITS
+    this.health = MAX_HITS;
     this.hitCooldown = 0;
     this.attackTimer = 0;
-    this.lives = MAX_LIVES;  // Add lives counter
-    this.isDead = false;     // Add permanent death state
-    this.isSpawning = true; // Add this line
-    this.spawnPosition = null;  // Add this line
+    this.lives = MAX_LIVES;
+    this.isDead = false;
+    this.isSpawning = true;
+    this.spawnPosition = null;
 
-    // Add these properties to the constructor
     this.spawnX = null;
     this.spawnY = null;
     this.initialX = null;
@@ -105,7 +104,8 @@ class King {
     if (this.spawnPosition) {
       this.hitBox.position.x = this.spawnPosition.x;
       this.hitBox.position.y = this.spawnPosition.y;
-    } else {
+    }
+    else {
       // Fallback to center if spawn position not set
       const gridW = cols * tileSize;
       const gridH = rows * tileSize;
@@ -134,7 +134,9 @@ class King {
 
   handleInput(walls, pigs) {
     // Don't process input if dead or spawning
-    if (this.isDead || this.isSpawning) return;
+    if (this.isDead || this.isSpawning) {
+      return;
+    }
 
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
@@ -179,12 +181,13 @@ class King {
     }
 
     if (!this.isAttacking) {
-      if (keyIsDown(RIGHT_ARROW)) {
+      // MOVEMENT UPDATED TO USE CONTROLS MAP
+      if (keyIsDown(controls.right)) {
         this.hitBox.vel.x = 6;
         this.spi.mirror.x = false;
         this.spi.changeAni('run');
       }
-      else if (keyIsDown(LEFT_ARROW)) {
+      else if (keyIsDown(controls.left)) {
         this.hitBox.vel.x = -6;
         this.spi.mirror.x = true;
         this.spi.changeAni('run');
@@ -194,7 +197,7 @@ class King {
         this.spi.changeAni('idle');
       }
 
-      if (keyIsDown(UP_ARROW) && !this.isJumping) {
+      if (keyIsDown(controls.up) && !this.isJumping) {
         this.hitBox.vel.y = -7;
         this.isJumping = true;
       }
@@ -243,8 +246,6 @@ class King {
       allSprites.debug = true;
     }
 
-    //this.hitBox.visible = false;
-
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
       this.spi.position.y = this.hitBox.position.y - 24;
@@ -275,7 +276,7 @@ class King {
 
   takeDamage(attackerX) {
     if (this.hitCooldown > 0 || this.isDead) {
-      return;
+      return; 
     }
 
     this.health--;
@@ -294,24 +295,19 @@ class King {
       this.spi.ani.frame = 0;
 
       if (this.lives > 0) {
-        // Let death animation complete once before respawning
         const deathAnimDuration = this.spi.ani.frameDelay * this.spi.ani.frames;
-        this.spi.ani.play = true;
-        
         setTimeout(() => {
-          this.respawn();
+          this.respawn(); 
         }, deathAnimDuration);
-      } else {
-        // For final death, play animation once then freeze on last frame
-        this.isDead = true;
+      }
+      else {
         const deathAnimDuration = this.spi.ani.frameDelay * this.spi.ani.frames;
-        this.spi.ani.play = true;
-        
         setTimeout(() => {
           this.spi.ani.play = false;
           this.spi.ani.frame = this.spi.ani.lastFrame;
           this.hitBox.vel.x = 0;
           this.hitBox.vel.y = 0;
+          this.isDead = true;
         }, deathAnimDuration);
       }
     }
@@ -325,23 +321,21 @@ class King {
 
   doAll(walls, pigs) {
     if (!this.hitBox || !this.spi) {
-      return;
+      return; 
     }
 
-    // If permanently dead, update sprite position but stop all other updates
     if (this.isDead) {
       if (this.spi.mirror.x) {
         this.spi.position.x = this.hitBox.position.x - 18;
         this.spi.position.y = this.hitBox.position.y - 24;
-      } else {
+      }
+      else {
         this.spi.position.x = this.hitBox.position.x + 18;
         this.spi.position.y = this.hitBox.position.y - 24;
       }
       this.spi.update();
       this.spi.draw();
       this.spi.scale = 2;
-
-      // Stop physics simulation when dead
       this.hitBox.vel.x = 0;
       this.hitBox.vel.y = 0;
       return;
@@ -349,11 +343,11 @@ class King {
 
     this.handleInput(walls, pigs);
 
-    // Update sprite position
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
       this.spi.position.y = this.hitBox.position.y - 24;
-    } else {
+    }
+    else {
       this.spi.position.x = this.hitBox.position.x + 18;
       this.spi.position.y = this.hitBox.position.y - 24;
     }

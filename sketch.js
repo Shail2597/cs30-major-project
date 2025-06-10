@@ -1,43 +1,49 @@
 // sketch.js
 
 let mg, ml;
-let state = "intro";      // "intro" | "mapEditor" | "mapLoader" | "keyBinds"
-let prevState = null;     // remembers whether we came from "mapEditor" or "mapLoader"
+let state = "intro";      // "intro" | "mapEditor" | "mapLoader" | "adventure" | "keyBinds"
+let prevState = null;     // remembers previous state
 let introImg;
+
+// ─── CUSTOM KEY‐BIND MANAGER ───────────────────────────────────────
+let controls;
+let rebindAction = null;
+let keyBindBtns = {};
+// ───────────────────────────────────────────────────────────────────
+
+// Utility: convert keyCode to human‐readable label
+function codeToLabel(code) {
+  switch (code) {
+  case UP_ARROW:    return '↑';
+  case DOWN_ARROW:  return '↓';
+  case LEFT_ARROW:  return '←';
+  case RIGHT_ARROW: return '→';
+  default:          return String.fromCharCode(code);
+  }
+}
 
 // Intro‐screen buttons:
 let btnMapEditor, btnAdventure, btnMapLoader;
-
 // Pause/Key‐Binds UI:
 let backButtonKB;
 
 function preload() {
   introImg = loadImage("asset/introWindow.png");
-
-  // Prepare MapGenerator and MapLoader:
-  mg = new MapGenerator({
-    cols: 20,
-    rows: 14,
-    tileSize: 64,
-    bgCount: 47,
-    wallCount: 47,
-    decCount: 23,
-  });
+  mg = new MapGenerator({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
   mg.preload();
-
-  ml = new MapLoader({
-    cols: 20,
-    rows: 14,
-    tileSize: 64,
-    bgCount: 47,
-    wallCount: 47,
-    decCount: 23,
-  });
+  ml = new MapLoader({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
   ml.preload();
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  // Initialize controls after p5 constants are available
+  controls = {
+    up:    UP_ARROW,
+    down:  DOWN_ARROW,
+    left:  LEFT_ARROW,
+    right: RIGHT_ARROW
+  };
 
   if (state === "intro") {
     setupIntroScreen();
@@ -48,7 +54,6 @@ function draw() {
   background(62, 56, 80);
 
   if (state === "intro") {
-    // Draw main menu background:
     imageMode(CORNER);
     image(introImg, 0, 0, width, height);
   }
@@ -58,55 +63,73 @@ function draw() {
   else if (state === "mapLoader") {
     ml.draw();
   }
+  else if (state === "adventure") {
+    // Placeholder for adventure mode
+  }
   else if (state === "keyBinds") {
-    // Pause overlay: show the same introWindow.png + title + Back button
     imageMode(CORNER);
     image(introImg, 0, 0, width, height);
 
-    fill(255);
-    textAlign(CENTER, TOP);
-    textSize(36);
-    text("Customizable Key Binds", width / 2, height * 0.15);
-
-    // (Insert any key‐binding UI here if desired.)
+    if (prevState === "mapEditor") {
+      // Map Generator instructions
+      fill(255);
+      textSize(16);
+      textAlign(LEFT, TOP);
+      text(
+        "Map Generator Instructions:\n" +
+        "- Click “Generate” to make a new random map.\n" +
+        "- Use the tile palette to place walls or decorations.\n" +
+        "- Click “Save” to download your layout.\n" +
+        "- Press ESC or Back to resume.",
+        50,
+        height * 0.2,
+        width - 100
+      );
+    }
+    else {
+      //key-bind UI for other modes
+      const startY = height * 0.2;
+      const lineH  = 50;
+      fill(255);
+      textSize(18);
+      textAlign(LEFT, CENTER);
+      ['up','down','left','right'].forEach((act,i) => {
+        const y = startY + i * lineH;
+        text(act.toUpperCase() + ':', 50, y);
+      });
+    }
   }
 }
 
 
+// -------------------------------------------------
+// SETUP & UI: Intro Screen
+// -------------------------------------------------
 function setupIntroScreen() {
-  // “Start Map Editor”:
   btnMapEditor = createButton("Start Map Editor");
-  btnMapEditor.position(width / 2 - 100, height / 2 +  60);
+  btnMapEditor.position(width/2 - 100, height/2 + 60);
   btnMapEditor.size(200, 40);
   styleButton(btnMapEditor);
   btnMapEditor.mousePressed(() => {
-    removeIntroButtons();
-    state = "mapEditor";
-    mg.setup();
+    removeIntroButtons(); state = "mapEditor"; mg.setup(); 
   });
 
-  // “Adventure Mode” (placeholder):
   btnAdventure = createButton("Adventure Mode");
-  btnAdventure.position(width / 2 - 100, height / 2 +  10);
+  btnAdventure.position(width/2 - 100, height/2 + 10);
   btnAdventure.size(200, 40);
   styleButton(btnAdventure);
-  // If you implement Adventure Mode later, add a mousePressed handler here.
 
-  // “Map Loader”:
   btnMapLoader = createButton("Map Loader");
-  btnMapLoader.position(width / 2 - 100, height / 2 + 110);
+  btnMapLoader.position(width/2 - 100, height/2 + 110);
   btnMapLoader.size(200, 40);
   styleButton(btnMapLoader);
   btnMapLoader.mousePressed(() => {
-    removeIntroButtons();
-    state = "mapLoader";
-    ml.setup();
+    removeIntroButtons(); state = "mapLoader"; ml.setup(); 
   });
 
-  // Hover effects on intro buttons:
   [btnMapEditor, btnAdventure, btnMapLoader].forEach(btn => {
     btn.mouseOver(() => btn.style('background-color', '#8541ee'));
-    btn.mouseOut(()  => btn.style('background-color', '#3E3850'));
+    btn.mouseOut (() => btn.style('background-color', '#3E3850'));
   });
 }
 
@@ -122,114 +145,140 @@ function styleButton(btn) {
 }
 
 function removeIntroButtons() {
-  [btnMapEditor, btnAdventure, btnMapLoader].forEach(btn => {
-    if (btn) {
-      btn.remove();
-    }
-  });
+  [btnMapEditor, btnAdventure, btnMapLoader].forEach(b => b && b.remove());
   btnMapEditor = btnAdventure = btnMapLoader = null;
 }
 
-
-
 // -------------------------------------------------
-// KEY PRESSED: toggle pause overlay when in mapLoader
+// KEY PRESSED: Pause & Key-Bind Capture
 // -------------------------------------------------
 function keyPressed() {
-  // If in mapEditor or mapLoader and user hits Esc, open the keyBinds (pause) overlay:
-  if ((state === "mapEditor" || state === "mapLoader") && keyCode === 27) {
+  // 1) Enter pause
+  if ((state === "mapEditor" || state === "mapLoader" || state === "adventure") && keyCode === ESCAPE) {
     prevState = state;
     state = "keyBinds";
 
-    // *** Hide MapLoader UI and all sprites when pausing ***
     if (prevState === "mapLoader") {
-      // Hide the “Load Map” and “Back” buttons from MapLoader (created here :contentReference[oaicite:1]{index=1})
-      if (ml.loadBtn) {
-        ml.loadBtn.hide();
-      }
-      if (ml.backBtn) {
-        ml.backBtn.hide();
-      }
-      // Hide every sprite (King, pigs, walls, colliders):
-      // p5.play exposes a global `allSprites` Group
+      ml.loadBtn?.hide();
+      ml.backBtn?.hide();
       allSprites.visible = false;
     }
+    // hide adventure UI here if needed
 
     setupKeyBindsScreen();
-    return; // Don’t forward this key event to mg or ml while paused
-  }
-
-  // If we’re currently in the paused “keyBinds” overlay, do nothing else:
-  if (state === "keyBinds") {
     return;
   }
 
-  // Otherwise, delegate key presses to mapEditor or mapLoader:
+  // 2) Exit pause
+  if (state === "keyBinds") {
+    if (keyCode === ESCAPE) {
+      cleanupKeyBindUI();
+      backButtonKB.remove();
+      backButtonKB = null;
+
+      if (prevState === "mapLoader") {
+        state = "mapLoader";
+        ml.loadBtn?.show();
+        ml.backBtn?.show();
+        allSprites.visible = true;
+      }
+      else if (prevState === "mapEditor") {
+        state = "mapEditor";
+      }
+      else if (prevState === "adventure") {
+        state = "adventure";
+      }
+      else {
+        state = "intro";
+        setupIntroScreen();
+      }
+      prevState = null;
+      return;
+    }
+
+    if (rebindAction) {
+      controls[rebindAction] = keyCode;
+      keyBindBtns[rebindAction].html(codeToLabel(keyCode));
+      rebindAction = null;
+    }
+    return;
+  }
+
+  // 3) Normal delegation
   if (state === "mapEditor") {
-    mg.keyPressed && mg.keyPressed();
+    mg.keyPressed?.();
   }
   if (state === "mapLoader") {
-    ml.keyPressed && ml.keyPressed();
+    ml.keyPressed?.();
+  }
+  if (state === "adventure") /* adventure.keyPressed?.() */{
+    ;
   }
 }
 
-
-
 // -------------------------------------------------
-// BUILD the pause/“Customizable Key Binds” window
+// BUILD Pause / Key-Binds UI
 // -------------------------------------------------
 function setupKeyBindsScreen() {
-  // Create a styled Back button in the top‐left corner:
   backButtonKB = createButton("Back");
   backButtonKB.position(20, 20);
   backButtonKB.size(100, 40);
   styleButton(backButtonKB);
-
   backButtonKB.mousePressed(() => {
-    // Remove the Back button from the DOM:
-    if (backButtonKB) {
-      backButtonKB.remove();
-      backButtonKB = null;
-    }
-    
-    // If we paused from mapLoader, restore its UI and sprites:
+    cleanupKeyBindUI();
+    backButtonKB.remove();
+    backButtonKB = null;
     if (prevState === "mapLoader") {
       state = "mapLoader";
-      prevState = null;
-
-      // *** Un‐pause: show MapLoader’s buttons and sprites again ***
-      if (ml.loadBtn) {
-        ml.loadBtn.show();
-      }
-      if (ml.backBtn) {
-        ml.backBtn.show();
-      }
+      ml.loadBtn?.show();
+      ml.backBtn?.show();
       allSprites.visible = true;
     }
     else if (prevState === "mapEditor") {
       state = "mapEditor";
-      prevState = null;
+    }
+    else if (prevState === "adventure") {
+      state = "adventure";
     }
     else {
-      // Fallback: return to main menu if somehow keyBinds was opened from intro
       state = "intro";
-      prevState = null;
       setupIntroScreen();
     }
+    prevState = null;
   });
+
+  if (prevState !== "mapEditor") {
+    ['up','down','left','right'].forEach((act,i) => {
+      const y = height * 0.2 + i * 50 - 15;
+      let btn = createButton(codeToLabel(controls[act]));
+      btn.position(150, y);
+      btn.size(80, 30);
+      styleButton(btn);
+      btn.mousePressed(() => {
+        rebindAction = act; btn.html('Press…'); 
+      });
+      keyBindBtns[act] = btn;
+    });
+  }
 }
 
-
+function cleanupKeyBindUI() {
+  Object.values(keyBindBtns).forEach(b => b.remove());
+  keyBindBtns = {};
+  rebindAction = null;
+}
 
 // -------------------------------------------------
-// MOUSE handling for mapEditor and mapLoader
+// MOUSE handling
 // -------------------------------------------------
 function mousePressed() {
   if (state === "mapEditor") {
-    mg.mousePressed && mg.mousePressed();
+    mg.mousePressed?.();
   }
   else if (state === "mapLoader") {
-    ml.mousePressed && ml.mousePressed();
+    ml.mousePressed?.();
+  }
+  else if (state === "adventure") /* adventure.mousePressed?.() */{
+    ;
   }
 }
-
