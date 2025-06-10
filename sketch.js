@@ -72,31 +72,60 @@ function draw() {
 
     if (prevState === "mapEditor") {
       // Map Generator instructions
-      fill(255);
-      textSize(16);
-      textAlign(LEFT, TOP);
+      fill('#e6816d');
+      stroke(0);
+      strokeWeight(4);
+      textSize(24);
+      textStyle(BOLD);
+      textAlign(CENTER, CENTER);
       text(
         "Map Generator Instructions:\n" +
-        "- Click “Generate” to make a new random map.\n" +
-        "- Use the tile palette to place walls or decorations.\n" +
-        "- Click “Save” to download your layout.\n" +
-        "- Press ESC or Back to resume.",
-        50,
-        height * 0.2,
+        "Click “Back” at the bottom of the page to go back to the main menu.\n" +
+        "Use the tile palette to place walls or decorations.\n" +
+        "Click “Save” to download your layout.\n" +
+        "Click “Erase” to erase any unwanted tile.\n" +
+        "Press ESC or Back button top left to resume.",
+        width * 0.06,
+        height * 0.5,
         width - 100
       );
+      strokeWeight(1);
     }
     else {
       //key-bind UI for other modes
-      const startY = height * 0.2;
+      const startY = height/2.5;
       const lineH  = 50;
-      fill(255);
-      textSize(18);
+      fill('#e6816d');
+      stroke(0);
+      strokeWeight(4);
+      textSize(24);
+      textStyle(BOLD);
       textAlign(LEFT, CENTER);
       ['up','down','left','right'].forEach((act,i) => {
         const y = startY + i * lineH;
-        text(act.toUpperCase() + ':', 50, y);
+        text(act.toUpperCase() + ':', width/5, y);
       });
+      strokeWeight(1);
+    }
+    if (prevState === "mapLoader") {
+      // Map Loader instructions
+      fill('#e6816d');
+      stroke(0);
+      strokeWeight(4);
+      textSize(24);
+      textStyle(BOLD);
+      textAlign(CENTER, CENTER);
+      text(
+        "Map Loader Instructions:\n" +
+        "Click “Back” on map loader screen to go back to the main menu.\n" +
+        "Use key binds to adjust controls.\n" +
+        "Click “Load” to load your saved map (json files).\n" +
+        "Press ESC or Back button top left to resume.",
+        width * 0.06,
+        height * 0.5,
+        width - 100
+      );
+      strokeWeight(1);
     }
   }
 }
@@ -249,9 +278,9 @@ function setupKeyBindsScreen() {
 
   if (prevState !== "mapEditor") {
     ['up','down','left','right'].forEach((act,i) => {
-      const y = height * 0.2 + i * 50 - 15;
+      const y = height/2.5 + i * 50 - 15;
       let btn = createButton(codeToLabel(controls[act]));
-      btn.position(150, y);
+      btn.position(width/4.1, y);
       btn.size(80, 30);
       styleButton(btn);
       btn.mousePressed(() => {
