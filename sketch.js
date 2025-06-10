@@ -1,6 +1,6 @@
 // sketch.js
 
-let mg, ml;
+let mg, ml, adv;
 let state = "intro";      // "intro" | "mapEditor" | "mapLoader" | "adventure" | "keyBinds"
 let prevState = null;     // remembers previous state
 let introImg;
@@ -15,7 +15,7 @@ let keyBindBtns = {};
 function codeToLabel(code) {
   switch (code) {
   case UP_ARROW:    return '↑';
-  case DOWN_ARROW:  return '↓';
+  case 32:          return '␣';
   case LEFT_ARROW:  return '←';
   case RIGHT_ARROW: return '→';
   default:          return String.fromCharCode(code);
@@ -33,6 +33,8 @@ function preload() {
   mg.preload();
   ml = new MapLoader({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
   ml.preload();
+  adv = new AdventureMode({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
+  adv.preload();
 }
 
 function setup() {
@@ -40,7 +42,7 @@ function setup() {
   // Initialize controls after p5 constants are available
   controls = {
     up:    UP_ARROW,
-    down:  DOWN_ARROW,
+    attack:  32,
     left:  LEFT_ARROW,
     right: RIGHT_ARROW
   };
@@ -64,7 +66,7 @@ function draw() {
     ml.draw();
   }
   else if (state === "adventure") {
-    // Placeholder for adventure mode
+    adv.draw();
   }
   else if (state === "keyBinds") {
     imageMode(CORNER);
@@ -101,7 +103,7 @@ function draw() {
       textSize(24);
       textStyle(BOLD);
       textAlign(LEFT, CENTER);
-      ['up','down','left','right'].forEach((act,i) => {
+      ['Up','Attack','Left','Right'].forEach((act,i) => {
         const y = startY + i * lineH;
         text(act.toUpperCase() + ':', width/5, y);
       });
@@ -121,6 +123,26 @@ function draw() {
         "Use key binds to adjust controls.\n" +
         "Click “Load” to load your saved map (json files).\n" +
         "Press ESC or Back button top left to resume.",
+        width * 0.06,
+        height * 0.5,
+        width - 100
+      );
+      strokeWeight(1);
+    }
+    if (prevState === "adventure") {
+      // adventure Mode instructions
+      fill('#e6816d');
+      stroke(0);
+      strokeWeight(4);
+      textSize(24);
+      textStyle(BOLD);
+      textAlign(CENTER, CENTER);
+      text(
+        "Adventure Mode Instructions:\n" +
+        "Click “Back” on Adventure Mode screen to go back to the main menu.\n" +
+        "Use key binds to adjust controls.\n" +
+        "Press “Space bar” to attack the enemies.\n" +
+        "Press ESC or Back button top left to exit pause screen.",
         width * 0.06,
         height * 0.5,
         width - 100
@@ -147,6 +169,9 @@ function setupIntroScreen() {
   btnAdventure.position(width/2 - 100, height/2 + 10);
   btnAdventure.size(200, 40);
   styleButton(btnAdventure);
+  btnAdventure.mousePressed(() => {
+    removeIntroButtons(); state = "adventure"; adv.setup();adv.loadMap(1);
+  });
 
   btnMapLoader = createButton("Map Loader");
   btnMapLoader.position(width/2 - 100, height/2 + 110);
@@ -192,7 +217,11 @@ function keyPressed() {
       ml.backBtn?.hide();
       allSprites.visible = false;
     }
-    // hide adventure UI here if needed
+    
+    if (prevState === "adventure") {
+      adv.backBtn?.hide();
+      allSprites.visible = false;
+    }
 
     setupKeyBindsScreen();
     return;
@@ -216,6 +245,8 @@ function keyPressed() {
       }
       else if (prevState === "adventure") {
         state = "adventure";
+        adv.backBtn?.show();
+        allSprites.visible = true;
       }
       else {
         state = "intro";
@@ -240,8 +271,8 @@ function keyPressed() {
   if (state === "mapLoader") {
     ml.keyPressed?.();
   }
-  if (state === "adventure") /* adventure.keyPressed?.() */{
-    ;
+  if (state === "adventure") {
+    adv.keyPressed?.();
   }
 }
 
@@ -277,7 +308,7 @@ function setupKeyBindsScreen() {
   });
 
   if (prevState !== "mapEditor") {
-    ['up','down','left','right'].forEach((act,i) => {
+    ['Jump','Attack','Left','Right'].forEach((act,i) => {
       const y = height/2.5 + i * 50 - 15;
       let btn = createButton(codeToLabel(controls[act]));
       btn.position(width/4.1, y);
@@ -307,7 +338,7 @@ function mousePressed() {
   else if (state === "mapLoader") {
     ml.mousePressed?.();
   }
-  else if (state === "adventure") /* adventure.mousePressed?.() */{
-    ;
+  else if (state === "adventure") {
+    adv.mousePressed?.();
   }
 }

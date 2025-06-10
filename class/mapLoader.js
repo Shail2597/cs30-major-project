@@ -117,7 +117,8 @@ class MapLoader {
           for (const pig of this.pigs) {
             pig.doAll(this.player.getX(), this.player.getY(), this.player);
           }
-        } else {
+        }
+        else {
           // If player is dead, just draw the pigs in their current state
           for (const pig of this.pigs) {
             if (pig && pig.pigSpi) {

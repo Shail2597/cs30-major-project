@@ -158,7 +158,7 @@ class King {
     }
 
     // --- ATTACK ---
-    if (keyIsDown(32) && this.attackCooldown === 0 && this.attackTimer === 0) {
+    if (keyIsDown(controls.attack) && this.attackCooldown === 0 && this.attackTimer === 0) {
       this.spi.changeAni('attack');
       this.isAttacking = true;
       this.attackCooldown = PLAYER_ATTACK_COOLDOWN;
