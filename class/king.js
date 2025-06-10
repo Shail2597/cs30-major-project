@@ -56,12 +56,12 @@ class King {
     this.spi.collider = 'NONE';
 
     this.hitBox.rotationLock = true;
-    this.hitBox.visible = true;
-    this.hitBoxJump.visible = true;
+    this.hitBox.visible = false;
+    this.hitBoxJump.visible = false;
     this.hitBoxJump.rotationLock = true;
     this.hitBoxJump.collider = "NONE";
     this.hitBox.collider = "DYNAMIC";
-    this.spi.visible = true;
+    this.spi.visible = false;
 
     // Store initial spawn position AFTER the door_in animation
     setTimeout(() => {
@@ -78,7 +78,7 @@ class King {
     this.initialY = this.hitBox.position.y;
 
     allSprites.pixelPerfect = true;
-    allSprites.visible = true;
+    allSprites.visible = false;
 
     // After setting up sprites, trigger spawn animation
     this.spi.changeAni('door_in');
@@ -158,7 +158,7 @@ class King {
     }
 
     // --- ATTACK ---
-    if (keyIsDown(controls.attack) && this.attackCooldown === 0 && this.attackTimer === 0) {
+    if (keyIsDown(controls.Attack) && this.attackCooldown === 0 && this.attackTimer === 0) {
       this.spi.changeAni('attack');
       this.isAttacking = true;
       this.attackCooldown = PLAYER_ATTACK_COOLDOWN;
@@ -182,12 +182,12 @@ class King {
 
     if (!this.isAttacking) {
       // MOVEMENT UPDATED TO USE CONTROLS MAP
-      if (keyIsDown(controls.right)) {
+      if (keyIsDown(controls.Right)) {
         this.hitBox.vel.x = 6;
         this.spi.mirror.x = false;
         this.spi.changeAni('run');
       }
-      else if (keyIsDown(controls.left)) {
+      else if (keyIsDown(controls.Left)) {
         this.hitBox.vel.x = -6;
         this.spi.mirror.x = true;
         this.spi.changeAni('run');
@@ -197,7 +197,7 @@ class King {
         this.spi.changeAni('idle');
       }
 
-      if (keyIsDown(controls.up) && !this.isJumping) {
+      if (keyIsDown(controls.Jump) && !this.isJumping) {
         this.hitBox.vel.y = -7;
         this.isJumping = true;
       }
@@ -242,9 +242,9 @@ class King {
       }
     }
 
-    if (mouseIsPressed) {
-      allSprites.debug = true;
-    }
+    // if (mouseIsPressed) {
+    //   allSprites.debug = false;
+    // }
 
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
@@ -257,7 +257,7 @@ class King {
 
     this.hitBoxJump.position.x = this.hitBox.position.x;
     this.hitBoxJump.position.y = this.hitBox.position.y + this.hitBox.height / 2 + this.hitBoxJump.height / 2;
-    this.hitBoxJump.visible = true;
+    this.hitBoxJump.visible = false;
 
     if (this.hitBoxJump.overlap(walls)) {
       this.hitBoxJump.color = color(0, 255, 0, 100);

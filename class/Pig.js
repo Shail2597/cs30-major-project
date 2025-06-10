@@ -39,7 +39,7 @@ class Pig {
     this.hitBoxPig.collider = "dynamic";  // Keep this as dynamic
     this.hitBoxPig.debug = true;
     this.pigSpi.visible = false;
-    this.hitBoxPig.visible = true;
+    this.hitBoxPig.visible = false;
   }
 
   move(playerX, playerY) {

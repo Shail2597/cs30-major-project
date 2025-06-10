@@ -133,7 +133,7 @@ class MapLoader {
   }
   drawGrid() {
     noStroke();
-    fill(255);
+    fill(62, 56, 80);
     rect(0, 0, this.cols * this.tileSize, this.rows * this.tileSize);
 
     imageMode(CORNER);
@@ -159,8 +159,8 @@ class MapLoader {
     }
 
     // grid lines
-    stroke(180);
-    noFill();
+    noStroke(1);
+    fill(62, 56, 80);
     for (let i = 0; i <= this.cols; i++) {
       line(i * this.tileSize, 0, i * this.tileSize, this.rows * this.tileSize);
     }

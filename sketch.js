@@ -41,10 +41,10 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // Initialize controls after p5 constants are available
   controls = {
-    up:    UP_ARROW,
-    attack:  32,
-    left:  LEFT_ARROW,
-    right: RIGHT_ARROW
+    Jump:    UP_ARROW,
+    Attack:  32,
+    Left:  LEFT_ARROW,
+    Right: RIGHT_ARROW
   };
 
   if (state === "intro") {
@@ -238,7 +238,8 @@ function keyPressed() {
         state = "mapLoader";
         ml.loadBtn?.show();
         ml.backBtn?.show();
-        allSprites.visible = true;
+        ml.player.visible = true;
+        ml.pigs.visible = true;
       }
       else if (prevState === "mapEditor") {
         state = "mapEditor";
@@ -246,7 +247,8 @@ function keyPressed() {
       else if (prevState === "adventure") {
         state = "adventure";
         adv.backBtn?.show();
-        allSprites.visible = true;
+        adv.player.visible = true;
+        adv.pigs.visible = true;
       }
       else {
         state = "intro";
@@ -292,7 +294,8 @@ function setupKeyBindsScreen() {
       state = "mapLoader";
       ml.loadBtn?.show();
       ml.backBtn?.show();
-      allSprites.visible = true;
+      ml.player.visible = true;
+      ml.pigs.visible = true;
     }
     else if (prevState === "mapEditor") {
       state = "mapEditor";
@@ -311,7 +314,7 @@ function setupKeyBindsScreen() {
     ['Jump','Attack','Left','Right'].forEach((act,i) => {
       const y = height/2.5 + i * 50 - 15;
       let btn = createButton(codeToLabel(controls[act]));
-      btn.position(width/4.1, y);
+      btn.position(width/4, y);
       btn.size(80, 30);
       styleButton(btn);
       btn.mousePressed(() => {

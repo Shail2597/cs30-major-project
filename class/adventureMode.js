@@ -339,8 +339,8 @@ class AdventureMode {
       }
     }
     // Grid lines
-    stroke(180);
-    noFill();
+    noStroke(1);
+    fill(62, 56, 80);
     for (let i = 0; i <= this.cols; i++) {
       line(i*this.tileSize, 0, i*this.tileSize, this.rows*this.tileSize);
     }
