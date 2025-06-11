@@ -29,11 +29,11 @@ let backButtonKB;
 
 function preload() {
   introImg = loadImage("asset/introWindow.png");
-  mg = new MapGenerator({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
+  mg = new MapGenerator({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
   mg.preload();
-  ml = new MapLoader({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
+  ml = new MapLoader({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
   ml.preload();
-  adv = new AdventureMode({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 23 });
+  adv = new AdventureMode({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
   adv.preload();
 }
 
