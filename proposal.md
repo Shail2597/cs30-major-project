@@ -17,13 +17,12 @@ Building a 2D Game(maybe a platformer)
 - Start, Pause, End Screen
 - Stat Bars
 - Changeble Key Binds
-- 
 
 
 ## Nice to Have
-- Different Game Modes
+- Different Game Modes - ACCOMPLISHED
 - A Scoring System
 - a PVP mode
-- User Generated Levels
+- User Generated Levels - ACCOMPLISHED
 - A book with all the game info
 - Changeble Languages
