@@ -33,7 +33,7 @@ class King {
   }
 
   pre(spriteSheet) {
-    this.hitBoxJump = new Sprite(0, 0, 40, 12);
+    this.hitBoxJump = new Sprite(0, 0, 35, 12);
     this.hitBox = new Sprite(0, 0, 45, 53);
     this.spi = new Sprite(0, 0, 78, 58);
 

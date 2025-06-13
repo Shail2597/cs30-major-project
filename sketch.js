@@ -59,6 +59,9 @@ function setup() {
   if (state === "intro") {
     setupIntroScreen();
   }
+  if (state === "end") {
+    endScreenBtn();
+  }
 }
 
 function draw() {
@@ -73,9 +76,50 @@ function draw() {
   }
   else if (state === "mapLoader") {
     ml.draw();
+    if (ml.player) {
+      if (ml.player.isDead) {
+        prevState = "mapLoader";
+        ml.loadBtn?.hide();
+        ml.player.spi.visible = false;
+        for (let pig of ml.pigs) {
+          if (pig && pig.pigSpi) {
+            pig.pigSpi.visible = false;
+          }
+        }
+        state = "end";
+        endScreenBtn();
+      }
+    }
   }
   else if (state === "adventure") {
     adv.draw();
+    if (adv.player) {
+      if (adv.player.isDead) {
+        prevState = "adventure";
+        adv.backBtn?.hide();
+        adv.player.spi.visible = false;
+        for (let pig of adv.pigs) {
+          if (pig && pig.pigSpi) {
+            pig.pigSpi.visible = false;
+          }
+        }
+        state = "end";
+        endScreenBtn();
+      }
+    }
+  }
+  else if (state === "end") {
+    imageMode(CORNER);
+    image(introImg, 0, 0, width, height);
+    fill('#e6816d');
+    stroke(0);
+    strokeWeight(4);
+    textSize(38);
+    textStyle(BOLD);
+    textAlign(CENTER, CENTER);
+    text("Game Over", width / 2, height / 2 - 60);
+    textSize(24);
+    strokeWeight(1);
   }
   else if (state === "keyBinds") {
     imageMode(CORNER);
@@ -388,4 +432,19 @@ function mousePressed() {
   else if (state === "adventure") {
     adv.mousePressed?.();
   }
+}
+
+// -------------------------------------------------
+// End Screen
+// -------------------------------------------------
+function endScreenBtn() {
+  btnBackMenu = createButton("Back to Main Menu");
+  btnBackMenu.position(width / 2 - 100, height / 2);
+  btnBackMenu.size(200, 40);
+  styleButton(btnBackMenu);
+  btnBackMenu.mousePressed(() => {
+    location.reload();
+  });
+  btnBackMenu.mouseOver(() => btnBackMenu.style('background-color', '#8541ee'));
+  btnBackMenu.mouseOut (() => btnBackMenu.style('background-color', '#3E3850'));
 }
