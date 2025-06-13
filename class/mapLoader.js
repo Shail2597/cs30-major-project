@@ -52,6 +52,7 @@ class MapLoader {
     // Load player and pig sprite sheets
     this.kingSpriteSheet = loadImage("asset/king_human_full.png");
     this.pigSpriteSheet = loadImage("asset/pig.png");
+    this.powerUpImage = loadImage("asset/heartPowerUp.png");
   }
 
   // Setup canvas, UI buttons, and gravity
@@ -146,6 +147,13 @@ class MapLoader {
       // Update and draw player
       this.player.doAll(this.walls, this.pigs);
     }
+    if (this.powerUps) {
+      for (let pu of this.powerUps) {
+        pu.update(this.player);
+        pu.draw();
+      }
+      this.powerUps = this.powerUps.filter(pu => !pu.finished);
+    }
   }
 
   // Draws the tile grid, decorations, and grid lines
@@ -188,66 +196,68 @@ class MapLoader {
   }
 
   // Handles loading a map file and spawning objects
-  handleFile(file) {
-    const PLAYER_SPAWN_TILE = "blocks/decoration/dec21.png";
-    const PIG_SPAWN_TILE = "blocks/decoration/dec22.png";
+  // inside class MapLoader { …
 
-    // Remove previous player and pigs
+  handleFile(file) {
+    const PLAYER_SPAWN_TILE  = "blocks/decoration/dec21.png";
+    const PIG_SPAWN_TILE     = "blocks/decoration/dec22.png";
+    const POWERUP_SPAWN_TILE = "blocks/decoration/dec24.png";
+
+    // 1) Destroy previous player
     if (this.player instanceof King) {
       this.player.destroy();
       this.player = null;
     }
 
+    // 2) Destroy previous pigs
     if (Array.isArray(this.pigs)) {
       for (const oldPig of this.pigs) {
         if (typeof oldPig.destroy === 'function') {
           oldPig.destroy();
-        }
-        else if (oldPig.pigSpi && typeof oldPig.pigSpi.remove === 'function') {
+        } else if (oldPig.pigSpi && typeof oldPig.pigSpi.remove === 'function') {
           oldPig.pigSpi.remove();
         }
       }
       this.pigs = [];
     }
-    
-    // Validate file
-    if (!file || !file.data) {
-      return;
-    }
 
+    // 3) Prepare arrays to collect spawn points
+    let playerSpawnPos    = null;
+    const pigSpawnPositions   = [];
+    const powerUpPositions    = [];
+
+    // 4) Validate file type
+    if (!file || !file.data) return;
     if (!file.name.toLowerCase().endsWith('.json')) {
       alert('Please select a .json file');
       return;
     }
 
     try {
-      // Parse map data
+      // 5) Parse JSON
       const data = typeof file.data === 'string' ? JSON.parse(file.data) : file.data;
 
-      // Validate base layer structure
+      // 6) Load layers, validate dims
       if (!Array.isArray(data.base) || data.base.length !== this.rows ||
           !data.base.every(r => Array.isArray(r) && r.length === this.cols)) {
-        throw new Error('Missing or malformed base layer');
+        throw new Error('Malformed base layer');
       }
-
       this.layers.base = data.base;
 
-      // Validate decoration layer structure
-      if (Array.isArray(data.decoration) && data.decoration.length === this.rows &&
+      if (Array.isArray(data.decoration) &&
+          data.decoration.length === this.rows &&
           data.decoration.every(r => Array.isArray(r) && r.length === this.cols)) {
         this.layers.decoration = data.decoration;
-      }
-      else {
-        this.layers.decoration = Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
+      } else {
+        // fallback empty decoration
+        this.layers.decoration = Array.from({ length: this.rows }, 
+          () => Array(this.cols).fill(null));
       }
 
-      // Build wall colliders for the map
+      // 7) Build walls
       this.buildWallColliders();
 
-      // Find player and pig spawn positions
-      let playerSpawnPos = null;
-      const pigSpawnPositions = [];
-
+      // 8) Scan for spawn tiles
       for (let y = 0; y < this.rows; y++) {
         for (let x = 0; x < this.cols; x++) {
           const tile = this.layers.decoration[y][x];
@@ -259,49 +269,53 @@ class MapLoader {
             pigSpawnPositions.push({ x, y });
             this.layers.decoration[y][x] = null;
           }
+          else if (tile === POWERUP_SPAWN_TILE) {
+            powerUpPositions.push({ x, y });
+            this.layers.decoration[y][x] = null;
+          }
         }
       }
 
-      // Create player (King) and set spawn position
+      // 9) Create & position player
       this.player = new King();
-      if (!this.kingSpriteSheet) {
-        throw new Error("King sprite sheet not loaded.");
-      }
       this.player.pre(this.kingSpriteSheet);
-
-      const offsetX = (width - this.cols * this.tileSize) / 2;
+      const offsetX = (width  - this.cols * this.tileSize) / 2;
       const offsetY = (height - this.rows * this.tileSize) / 2;
 
       if (playerSpawnPos) {
-        this.player.hitBox.position.x = offsetX + playerSpawnPos.x * this.tileSize + this.tileSize / 2;
-        this.player.hitBox.position.y = offsetY + playerSpawnPos.y * this.tileSize + this.tileSize / 2;
-      }
-      else {
+        this.player.hitBox.position.x = offsetX + playerSpawnPos.x * this.tileSize + this.tileSize/2;
+        this.player.hitBox.position.y = offsetY + playerSpawnPos.y * this.tileSize + this.tileSize/2;
+      } else {
         this.player.respawn();
       }
-
       this.player.spi.visible = true;
 
-      // Create pigs at their spawn positions
+      // 10) Create pigs
       this.pigs = [];
       for (const pos of pigSpawnPositions) {
-        if (!this.pigSpriteSheet) {
-          throw new Error("Pig sprite sheet not loaded.");
-        }
-
         const pig = new Pig(
-          offsetX + pos.x * this.tileSize + this.tileSize / 2,
-          offsetY + pos.y * this.tileSize + this.tileSize / 2
+          offsetX + pos.x * this.tileSize + this.tileSize/2,
+          offsetY + pos.y * this.tileSize + this.tileSize/2
         );
-
         pig.pre(this.pigSpriteSheet);
         pig.pigSpi.visible = true;
         this.pigs.push(pig);
       }
 
-      // Enable gravity
-      world.gravity.y = 9;
+      // 11) Spawn power-ups
+      this.powerUps = [];
+      for (const pos of powerUpPositions) {
+        const pu = new PowerUp();
+        pu.pre(this.powerUpImage);
+        pu.spawn(
+          offsetX + pos.x * this.tileSize + this.tileSize/2,
+          offsetY + pos.y * this.tileSize + this.tileSize/2
+        );
+        this.powerUps.push(pu);
+      }
 
+      // 12) Reinstate gravity and done
+      world.gravity.y = 9;
       console.log('Map loaded successfully!');
     }
     catch (err) {
@@ -309,6 +323,7 @@ class MapLoader {
       console.error(err);
     }
   }
+
 
   // Builds wall colliders for all wall and certain decoration tiles
   buildWallColliders() {

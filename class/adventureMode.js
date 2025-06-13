@@ -67,6 +67,7 @@ class AdventureMode {
     // Preload player and pig sprites
     this.kingSheet = loadImage("asset/king_human_full.png");
     this.pigSheet  = loadImage("asset/pig.png");
+    this.powerUpSheet = loadImage("asset/heartPowerUp.png");
   }
 
   // Load a map by number and set up the level
@@ -481,6 +482,7 @@ class AdventureMode {
   _spawnEntities() {
     const PLAYER_SPAWN = 'blocks/decoration/dec21.png';
     const PIG_SPAWN = 'blocks/decoration/dec22.png';
+    const POWERUP_SPAWN_TILE = 'blocks/decoration/dec24.png';
     
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
@@ -520,6 +522,14 @@ class AdventureMode {
           const pig = new Pig(spawnX, spawnY);
           pig.pre(this.pigSheet);
           this.pigs.push(pig);
+          this.layers.decoration[y][x] = null;
+        }
+        else if (tile === POWERUP_SPAWN) {
+          const spawnX = offsetX + x*this.tileSize + this.tileSize/2;
+          const spawnY = offsetY + y*this.tileSize + this.tileSize/2;
+          const pu = new PowerUp();
+          pu.pre( this.powerUpSheet );
+          pu.spawn(spawnX, spawnY);
           this.layers.decoration[y][x] = null;
         }
       }
