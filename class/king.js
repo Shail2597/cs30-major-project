@@ -1,3 +1,4 @@
+// --- CONSTANTS FOR PLAYER LOGIC ---
 const GRAVITY = 0.4;
 const MAX_FALL_SPEED = 8;
 const cols = 20;
@@ -8,10 +9,12 @@ const PLAYER_ATTACK_COOLDOWN = 30;
 const PLAYER_ATTACK_RANGE = 50;
 
 const MAX_LIVES = 3;
-const MAX_HITS = 50;
+const MAX_HITS = 5;
 
+// --- KING PLAYER CLASS ---
 class King {
   constructor() {
+    // --- PLAYER STATE ---
     this.isJumping = false;
     this.hitBox = null;
     this.spi = null;
@@ -32,11 +35,14 @@ class King {
     this.initialY = null;
   }
 
+  // --- SETUP SPRITES AND ANIMATIONS ---
   pre(spriteSheet) {
+    // Setup hitboxes and main sprite
     this.hitBoxJump = new Sprite(0, 0, 35, 12);
     this.hitBox = new Sprite(0, 0, 45, 53);
     this.spi = new Sprite(0, 0, 78, 58);
 
+    // Add all animations from sprite sheet
     this.spi.spriteSheet = spriteSheet;
     this.spi.addAnis({
       attack: { row: 0, frames: 3, frameDelay: 6 },
@@ -63,7 +69,7 @@ class King {
     this.hitBox.collider = "DYNAMIC";
     this.spi.visible = false;
 
-    // Store initial spawn position AFTER the door_in animation
+    // Store spawn position after door_in animation
     setTimeout(() => {
       this.spawnPosition = {
         x: this.hitBox.position.x,
@@ -80,7 +86,7 @@ class King {
     allSprites.pixelPerfect = true;
     allSprites.visible = false;
 
-    // After setting up sprites, trigger spawn animation
+    // Play spawn animation
     this.spi.changeAni('door_in');
     this.spi.ani.frame = 0;
     setTimeout(() => {
@@ -89,6 +95,7 @@ class King {
     }, 1000); // 1 second spawn animation
   }
 
+  // --- HANDLE PLAYER RESPAWN ---
   respawn() {
     if (this.lives <= 0) {
       this.isDead = true;
@@ -100,7 +107,7 @@ class King {
     this.isSpawning = true;
     this.isJumping = false;
     
-    // Return to spawn position (where the king appeared after door_in animation)
+    // Move to spawn position (after door_in animation)
     if (this.spawnPosition) {
       this.hitBox.position.x = this.spawnPosition.x;
       this.hitBox.position.y = this.spawnPosition.y;
@@ -123,7 +130,7 @@ class King {
     this.hitBox.vel.x = 0;
     this.hitBox.vel.y = 0;
     
-    // Add delay before player can move
+    // Delay before player can move
     setTimeout(() => {
       this.isSpawning = false;
       this.spi.changeAni('idle');
@@ -132,12 +139,14 @@ class King {
     return true;
   }
 
+  // --- HANDLE PLAYER INPUT AND MOVEMENT ---
   handleInput(walls, pigs) {
     // Don't process input if dead or spawning
     if (this.isDead || this.isSpawning) {
       return;
     }
 
+    // Handle attack/hit cooldowns
     if (this.attackCooldown > 0) {
       this.attackCooldown--;
     }
@@ -152,18 +161,20 @@ class King {
       this.isAttacking = false;
     }
 
+    // If in hit animation, don't allow movement
     if (this.spi.ani?.name === 'hit' && this.spi.ani.frame < this.spi.ani.lastFrame) {
       this.hitBox.vel.x = 0;
       return;
     }
 
-    // --- ATTACK ---
+    // --- ATTACK LOGIC ---
     if (keyIsDown(controls.Attack) && this.attackCooldown === 0 && this.attackTimer === 0) {
       this.spi.changeAni('attack');
       this.isAttacking = true;
       this.attackCooldown = PLAYER_ATTACK_COOLDOWN;
       this.attackTimer = 16;
 
+      // Check for pigs in attack range
       if (Array.isArray(pigs)) {
         for (const pig of pigs) {
           if (pig && !pig.dead) {
@@ -180,8 +191,9 @@ class King {
       }
     }
 
+    // --- MOVEMENT LOGIC ---
     if (!this.isAttacking) {
-      // MOVEMENT UPDATED TO USE CONTROLS MAP
+      // Horizontal movement
       if (keyIsDown(controls.Right)) {
         this.hitBox.vel.x = 6;
         this.spi.mirror.x = false;
@@ -197,11 +209,13 @@ class King {
         this.spi.changeAni('idle');
       }
 
+      // Jumping
       if (keyIsDown(controls.Jump) && !this.isJumping) {
         this.hitBox.vel.y = -7;
         this.isJumping = true;
       }
 
+      // Set animation for jump/fall
       if (this.hitBox.vel.y < 0) {
         this.spi.changeAni('jump');
       }
@@ -210,6 +224,7 @@ class King {
       }
     }
 
+    // --- GROUND AND PIG COLLISION CHECKS ---
     let onGround = this.hitBoxJump.overlap(walls) && this.hitBox.vel.y >= 0;
     let onPig = false;
 
@@ -226,6 +241,7 @@ class King {
       this.isJumping = false;
     }
 
+    // --- STOMP PIGS ---
     if (Array.isArray(pigs)) {
       for (const pig of pigs) {
         if (
@@ -242,10 +258,7 @@ class King {
       }
     }
 
-    // if (mouseIsPressed) {
-    //   allSprites.debug = false;
-    // }
-
+    // --- SPRITE POSITIONING ---
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
       this.spi.position.y = this.hitBox.position.y - 24;
@@ -255,10 +268,12 @@ class King {
       this.spi.position.y = this.hitBox.position.y - 24;
     }
 
+    // --- UPDATE JUMP HITBOX POSITION ---
     this.hitBoxJump.position.x = this.hitBox.position.x;
     this.hitBoxJump.position.y = this.hitBox.position.y + this.hitBox.height / 2 + this.hitBoxJump.height / 2;
     this.hitBoxJump.visible = false;
 
+    // --- DEBUG COLOR FOR JUMP HITBOX ---
     if (this.hitBoxJump.overlap(walls)) {
       this.hitBoxJump.color = color(0, 255, 0, 100);
     }
@@ -267,6 +282,7 @@ class King {
     }
   }
 
+  // --- GET PLAYER X/Y ---
   getX() {
     return this.hitBox.x; 
   }
@@ -274,6 +290,7 @@ class King {
     return this.hitBox.y; 
   }
 
+  // --- HANDLE DAMAGE TAKEN ---
   takeDamage(attackerX) {
     if (this.hitCooldown > 0 || this.isDead) {
       return; 
@@ -284,11 +301,13 @@ class King {
     this.spi.ani.frame = 0;
     this.hitCooldown = 20;
 
+    // Knockback direction
     if (typeof attackerX === "number") {
       const direction = this.hitBox.x < attackerX ? -1 : 1;
       this.hitBox.vel.x = direction * 4;
     }
 
+    // If health runs out, lose a life and respawn or die
     if (this.health <= 0) {
       this.lives--;
       this.spi.changeAni('dead');
@@ -313,17 +332,20 @@ class King {
     }
   }
 
+  // --- REMOVE ALL SPRITES ---
   destroy() {
     this.hitBox?.remove(); this.hitBox = null;
     this.spi?.remove(); this.spi = null;
     this.hitBoxJump?.remove(); this.hitBoxJump = null;
   }
 
+  // --- MAIN UPDATE/DRAW LOOP FOR PLAYER ---
   doAll(walls, pigs) {
     if (!this.hitBox || !this.spi) {
       return; 
     }
 
+    // If dead, just draw dead sprite
     if (this.isDead) {
       if (this.spi.mirror.x) {
         this.spi.position.x = this.hitBox.position.x - 18;
@@ -341,8 +363,10 @@ class King {
       return;
     }
 
+    // Handle input and movement
     this.handleInput(walls, pigs);
 
+    // Update sprite position
     if (this.spi.mirror.x) {
       this.spi.position.x = this.hitBox.position.x - 18;
       this.spi.position.y = this.hitBox.position.y - 24;

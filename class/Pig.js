@@ -1,11 +1,14 @@
+// --- CONSTANTS FOR PIG LOGIC ---
 const PIG_ACTIVATION_DISTANCE = 250;
 const PIG_SPEED = 2.2;
-const PIG_ATTACK_RANGE = 45;  // Slightly increased
-const PIG_ATTACK_COOLDOWN = 45;  // Slightly decreased
+const PIG_ATTACK_RANGE = 45;
+const PIG_ATTACK_COOLDOWN = 45;
 const PIG_MAX_HEALTH = 3;
 
+// --- PIG ENEMY CLASS ---
 class Pig {
   constructor(x = windowWidth / 2 + windowWidth / 4, y = windowHeight / 2) {
+    // --- PIG STATE ---
     this.isJumping = false;
     this.activated = false;
     this.isAttacking = false;
@@ -19,6 +22,7 @@ class Pig {
     this.hitBoxPig = null;
   }
 
+  // --- SETUP SPRITES AND ANIMATIONS ---
   pre(spriteSheet) {
     this.hitBoxPig = new Sprite(this.spawnX, this.spawnY, 34, 28);
     this.pigSpi = new Sprite(this.hitBoxPig.x, this.hitBoxPig.y, 34, 28);
@@ -36,27 +40,32 @@ class Pig {
     this.pigSpi.changeAni('idle');
     this.hitBoxPig.rotationLock = true;
     this.pigSpi.rotationLock = true;
-    this.hitBoxPig.collider = "dynamic";  // Keep this as dynamic
+    this.hitBoxPig.collider = "dynamic";
     this.hitBoxPig.debug = true;
     this.pigSpi.visible = false;
     this.hitBoxPig.visible = false;
   }
 
+  // --- PIG MOVEMENT AND ACTIVATION LOGIC ---
   move(playerX, playerY) {
+    // If pig is dead or in hit animation, don't move
     if (this.dead || this.pigSpi.ani?.name === 'hit') {
       this.hitBoxPig.vel.x = 0;
       return;
     }
 
+    // Calculate distance to player
     const dx = playerX - this.hitBoxPig.x;
     const dy = playerY - this.hitBoxPig.y;
     const distToPlayer = Math.sqrt(dx * dx + dy * dy);
 
+    // Activate pig if player is close enough
     if (!this.activated && distToPlayer < PIG_ACTIVATION_DISTANCE) {
       this.activated = true;
     }
 
     if (this.activated) {
+      // --- JUMPING LOGIC ---
       const onGround = this.hitBoxPig.vel.y === 0;
       const kingIsAbove = dy < -30;
       const kingIsCloseX = Math.abs(dx) < 60;
@@ -68,15 +77,18 @@ class Pig {
       const checkY = this.hitBoxPig.y + 10;
       const groundCheckY = this.hitBoxPig.y + 30;
 
+      // Check for wall in front
       wallInFront = allSprites.some(s => s !== this.hitBoxPig && s.collider === "static" && Math.abs(s.x - checkX) < 20 && Math.abs(s.y - checkY) < 30);
+      // Check for edge ahead
       edgeAhead = !allSprites.some(s => s !== this.hitBoxPig && s.collider === "static" && Math.abs(s.x - checkX) < 20 && Math.abs(s.y - groundCheckY) < 10);
 
+      // Jump if player is above and there's a wall or edge
       if (onGround && kingIsAbove && kingIsCloseX && (wallInFront || edgeAhead)) {
         this.hitBoxPig.vel.y = -7;
         this.isJumping = true;
       }
 
-      // Improve attack range check
+      // --- ATTACK AND CHASE LOGIC ---
       if (distToPlayer < PIG_ATTACK_RANGE) {
         this.hitBoxPig.vel.x = 0;
         this.isAttacking = true;
@@ -88,33 +100,34 @@ class Pig {
         this.isAttacking = false;
       }
       else {
+        // Chase player
         const angle = Math.atan2(dy, dx);
         this.hitBoxPig.vel.x = Math.cos(angle) * PIG_SPEED;
         this.isAttacking = false;
       }
 
+      // Flip sprite based on direction
       this.pigSpi.mirror.x = dx > 0;
     }
     else {
+      // Not activated, don't move
       this.hitBoxPig.vel.x = 0;
       this.isAttacking = false;
     }
   }
 
+  // --- HANDLE ATTACKING THE PLAYER ---
   handleAttack(playerObj) {
     if (this.dead || !playerObj || !playerObj.hitBox) {
       return;
     }
 
+    // Calculate distance to player
     const dx = playerObj.hitBox.x - this.hitBoxPig.x;
     const dy = playerObj.hitBox.y - this.hitBoxPig.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Only start new attack if:
-    // 1. In attack mode
-    // 2. Cooldown is done
-    // 3. Within range
-    // 4. Not currently in attack animation
+    // Only attack if in attack mode, cooldown is done, in range, and not already attacking
     if (
       this.isAttacking && 
       this.attackCooldown <= 0 &&
@@ -135,6 +148,7 @@ class Pig {
     }
   }
 
+  // --- HANDLE TAKING DAMAGE FROM PLAYER ---
   takeHit(attackerX) {
     if (this.dead || this.hitCooldown > 0) {
       return;
@@ -144,28 +158,32 @@ class Pig {
     this.pigSpi.changeAni('hit');
     this.pigSpi.ani.frame = 0;
 
+    // Knockback direction
     const direction = this.hitBoxPig.x < attackerX ? -1 : 1;
-    this.hitBoxPig.vel.x = direction * 24; // Increased from 18 to 24
-    this.hitBoxPig.vel.y = -3; // Add small upward bounce
+    this.hitBoxPig.vel.x = direction * 24;
+    this.hitBoxPig.vel.y = -3; // Apply some vertical knockback
 
+    // If health runs out, die
     if (this.health <= 0) {
       this.dead = true;
       this.pigSpi.changeAni('death');
     }
   }
 
+  // --- SYNC SPRITE AND HITBOX POSITIONS ---
   colliderAndhitBox() {
     this.pigSpi.collider = "NONE";
     this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
     this.pigSpi.position.y = this.hitBoxPig.position.y - 6.5;
   }
 
+  // --- HANDLE ANIMATION STATES ---
   handleAnimations() {
     if (this.dead) {
       return;
     }
 
-    // Priority handling for animations
+    // Priority: attack > hit > run > idle
     if (this.pigSpi.ani?.name === 'attack' && this.pigSpi.ani.frame < this.pigSpi.ani.lastFrame) {
       return; // Let attack animation finish
     }
@@ -189,13 +207,14 @@ class Pig {
     }
   }
 
+  // --- MAIN UPDATE/DRAW LOOP FOR PIG ---
   doAll(playerX, playerY, playerObj) {
     // Check if pig is already destroyed
     if (!this.pigSpi || !this.hitBoxPig) {
       return;
     }
 
-    // Check if pig is dead
+    // --- DEATH ANIMATION AND CLEANUP ---
     if (this.dead) {
       // Update position for final death animation
       this.pigSpi.position.x = this.hitBoxPig.position.x - 2;
@@ -217,7 +236,7 @@ class Pig {
       }
     }
 
-    // If player is dead, freeze the pig's animation and movement
+    // --- FREEZE IF PLAYER IS DEAD ---
     if (playerObj.isDead) {
       this.hitBoxPig.vel.x = 0;
       this.hitBoxPig.vel.y = 0;
@@ -232,7 +251,7 @@ class Pig {
       return;
     }
 
-    // Normal behavior when player is alive
+    // --- NORMAL BEHAVIOR WHEN PLAYER IS ALIVE ---
     this.move(playerX, playerY);
     this.handleAttack(playerObj);
     this.handleAnimations();
@@ -245,6 +264,7 @@ class Pig {
     this.pigSpi.draw();
   }
 
+  // --- GET PIG X/Y ---
   getX() {
     return this.hitBoxPig.x; 
   }
@@ -252,6 +272,7 @@ class Pig {
     return this.hitBoxPig.y; 
   }
 
+  // --- REMOVE ALL SPRITES ---
   destroy() {
     this.hitBoxPig?.remove();
     this.hitBoxPig = null;
@@ -260,4 +281,5 @@ class Pig {
   }
 }
 
+// Expose Pig to global scope
 window.Pig = Pig;

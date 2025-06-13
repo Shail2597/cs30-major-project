@@ -1,18 +1,16 @@
-// sketch.js
+// Main game variables and state
+let mg, ml, adv; // MapGenerator, MapLoader, AdventureMode instances
+let state = "intro"; // Current game state
+let prevState = null; // Previous state for returning from menus
+let introImg; // Intro screen image
+let bgMusic; // Background music
 
-let mg, ml, adv;
-let state = "intro";      // "intro" | "mapEditor" | "mapLoader" | "adventure" | "keyBinds"
-let prevState = null;     // remembers previous state
-let introImg;
-let bgMusic;  // Add this line
+// Controls and key binding UI
+let controls; // Object holding key bindings
+let rebindAction = null; // Which action is being rebound
+let keyBindBtns = {}; // Buttons for key binding UI
 
-// ─── CUSTOM KEY‐BIND MANAGER ───────────────────────────────────────
-let controls;
-let rebindAction = null;
-let keyBindBtns = {};
-// ───────────────────────────────────────────────────────────────────
-
-// Utility: convert keyCode to human‐readable label
+// Converts key codes to display labels for UI
 function codeToLabel(code) {
   switch (code) {
   case UP_ARROW:    return '↑';
@@ -23,16 +21,29 @@ function codeToLabel(code) {
   }
 }
 
-// Intro‐screen buttons:
+// Main menu and keybind screen buttons
 let btnMapEditor, btnAdventure, btnMapLoader, btnReset;
-// Pause/Key‐Binds UI:
 let backButtonKB;
 
+// Preload assets and initialize game modes
 function preload() {
   introImg = loadImage("asset/introWindow.png");
-  // Load background music
-  bgMusic = loadSound('asset/bgsound.mp3');
   
+  // Try to load background music, handle errors gracefully
+  try {
+    bgMusic = loadSound('asset/bgsound.mp3', 
+      () => console.log("Sound loaded successfully"),
+      (err) => {
+        console.error("Error loading sound:", err);
+        bgMusic = null;
+      }
+    );
+  } catch (err) {
+    console.error("Error loading sound:", err);
+    bgMusic = null;
+  }
+
+  // Initialize and preload all game modes
   mg = new MapGenerator({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
   mg.preload();
   ml = new MapLoader({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
@@ -41,14 +52,15 @@ function preload() {
   adv.preload();
 }
 
+// Setup canvas, music, controls, and main menu
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
   // Start background music
-  bgMusic.setVolume(0.5); // Set volume to 50%
-  bgMusic.loop();  // Make it loop continuously
+  bgMusic.setVolume(0.5); 
+  bgMusic.loop(); 
   
-  // Initialize controls after p5 constants are available
+  // Default controls
   controls = {
     Jump:    UP_ARROW,
     Attack:  32,
@@ -56,6 +68,7 @@ function setup() {
     Right: RIGHT_ARROW
   };
 
+  // Show intro or end screen as needed
   if (state === "intro") {
     setupIntroScreen();
   }
@@ -64,17 +77,21 @@ function setup() {
   }
 }
 
+// Main game loop: draws the current state
 function draw() {
   background(62, 56, 80);
 
   if (state === "intro") {
+    // Draw intro screen
     imageMode(CORNER);
     image(introImg, 0, 0, width, height);
   }
   else if (state === "mapEditor") {
+    // Draw map editor
     mg.draw();
   }
   else if (state === "mapLoader") {
+    // Draw map loader and check for player death
     ml.draw();
     if (ml.player) {
       if (ml.player.isDead) {
@@ -92,6 +109,7 @@ function draw() {
     }
   }
   else if (state === "adventure") {
+    // Draw adventure mode and check for player death
     adv.draw();
     if (adv.player) {
       if (adv.player.isDead) {
@@ -109,6 +127,7 @@ function draw() {
     }
   }
   else if (state === "end") {
+    // Draw game over screen
     imageMode(CORNER);
     image(introImg, 0, 0, width, height);
     fill('#e6816d');
@@ -122,11 +141,12 @@ function draw() {
     strokeWeight(1);
   }
   else if (state === "keyBinds") {
+    // Draw key binding and instructions screen
     imageMode(CORNER);
     image(introImg, 0, 0, width, height);
 
     if (prevState === "mapEditor") {
-      // Map Generator instructions
+      // Map editor instructions
       fill('#e6816d');
       stroke(0);
       strokeWeight(4);
@@ -147,7 +167,7 @@ function draw() {
       strokeWeight(1);
     }
     else {
-      //key-bind UI for other modes
+      // Show key binding options
       const startY = height/2.5;
       const lineH  = 50;
       fill('#e6816d');
@@ -163,7 +183,7 @@ function draw() {
       strokeWeight(1);
     }
     if (prevState === "mapLoader") {
-      // Map Loader instructions
+      // Map loader instructions
       fill('#e6816d');
       stroke(0);
       strokeWeight(4);
@@ -183,7 +203,7 @@ function draw() {
       strokeWeight(1);
     }
     if (prevState === "adventure") {
-      // adventure Mode instructions
+      // Adventure mode instructions
       fill('#e6816d');
       stroke(0);
       strokeWeight(4);
@@ -205,10 +225,7 @@ function draw() {
   }
 }
 
-
-// -------------------------------------------------
-// SETUP & UI: Intro Screen
-// -------------------------------------------------
+// Setup the intro/main menu screen and its buttons
 function setupIntroScreen() {
   btnMapEditor = createButton("Start Map Editor");
   btnMapEditor.position(width/2 - 100, height/2 + 60);
@@ -227,15 +244,13 @@ function setupIntroScreen() {
     state = "adventure"; 
     adv.setup();
 
-    // Get last completed level and start from next level
+    // Load last completed level or start from 1
     const lastLevel = parseInt(localStorage.getItem('lastCompletedLevel')) || 0;
     const startLevel = lastLevel + 1;
     
-    // Ensure we don't exceed total maps
     if (startLevel <= adv.totalMaps) {
       adv.loadMap(startLevel);
     } else {
-      // If all levels complete, start from 1
       adv.loadMap(1);
     }
   });
@@ -248,7 +263,6 @@ function setupIntroScreen() {
     removeIntroButtons(); state = "mapLoader"; ml.setup(); 
   });
 
-  // Modify the Reset Progress button creation to use the global variable
   btnReset = createButton("Reset Progress");
   btnReset.position(width/2 - 100, height/2 + 160);
   btnReset.size(200, 40);
@@ -258,13 +272,14 @@ function setupIntroScreen() {
     alert('Progress reset! Game will start from Level 1');
   });
 
-  // Add hover effects for all buttons
+  // Add hover effects to all menu buttons
   [btnMapEditor, btnAdventure, btnMapLoader, btnReset].forEach(btn => {
     btn.mouseOver(() => btn.style('background-color', '#8541ee'));
     btn.mouseOut(() => btn.style('background-color', '#3E3850'));
   });
 }
 
+// Apply consistent styling to buttons
 function styleButton(btn) {
   btn.style("background-color", "#3E3850");
   btn.style("color", "#ffffff");
@@ -276,21 +291,20 @@ function styleButton(btn) {
   btn.style("cursor", "pointer");
 }
 
+// Remove all main menu buttons from the screen
 function removeIntroButtons() {
-  // Remove all buttons and reset their variables
   [btnMapEditor, btnAdventure, btnMapLoader, btnReset].forEach(b => b && b.remove());
   btnMapEditor = btnAdventure = btnMapLoader = btnReset = null;
 }
 
-// -------------------------------------------------
-// KEY PRESSED: Pause & Key-Bind Capture
-// -------------------------------------------------
+// Handle all key presses for game and menus
 function keyPressed() {
-  // 1) Enter paumse
+  // Open keybinds/instructions screen with ESC in game modes
   if ((state === "mapEditor" || state === "mapLoader" || state === "adventure") && keyCode === ESCAPE) {
     prevState = state;
     state = "keyBinds";
 
+    // Hide relevant UI and sprites
     if (prevState === "mapLoader") {
       ml.loadBtn?.hide();
       ml.backBtn?.hide();
@@ -306,13 +320,14 @@ function keyPressed() {
     return;
   }
 
-  // 2) Exit pause
+  // Handle keybinds/instructions screen logic
   if (state === "keyBinds") {
     if (keyCode === ESCAPE) {
       cleanupKeyBindUI();
       backButtonKB.remove();
       backButtonKB = null;
 
+      // Restore previous state and UI
       if (prevState === "mapLoader") {
         state = "mapLoader";
         ml.loadBtn?.show();
@@ -337,6 +352,7 @@ function keyPressed() {
       return;
     }
 
+    // Handle rebinding a control
     if (rebindAction) {
       controls[rebindAction] = keyCode;
       keyBindBtns[rebindAction].html(codeToLabel(keyCode));
@@ -345,7 +361,7 @@ function keyPressed() {
     return;
   }
 
-  // 3) Normal delegation
+  // Forward key presses to current game mode
   if (state === "mapEditor") {
     mg.keyPressed?.();
   }
@@ -356,7 +372,7 @@ function keyPressed() {
     adv.keyPressed?.();
   }
 
-  // Add a mute/unmute toggle with 'M' key
+  // Toggle background music with 'm'
   if (key === 'm' || key === 'M') {
     if (bgMusic.isPlaying()) {
       bgMusic.pause();
@@ -366,9 +382,7 @@ function keyPressed() {
   }
 }
 
-// -------------------------------------------------
-// BUILD Pause / Key-Binds UI
-// -------------------------------------------------
+// Setup the key binding and instructions screen
 function setupKeyBindsScreen() {
   backButtonKB = createButton("Back");
   backButtonKB.position(20, 20);
@@ -398,6 +412,7 @@ function setupKeyBindsScreen() {
     prevState = null;
   });
 
+  // Show key binding buttons if not in map editor
   if (prevState !== "mapEditor") {
     ['Jump','Attack','Left','Right'].forEach((act,i) => {
       const y = height/2.5 + i * 50 - 15;
@@ -413,15 +428,14 @@ function setupKeyBindsScreen() {
   }
 }
 
+// Remove key binding UI elements
 function cleanupKeyBindUI() {
   Object.values(keyBindBtns).forEach(b => b.remove());
   keyBindBtns = {};
   rebindAction = null;
 }
 
-// -------------------------------------------------
-// MOUSE handling
-// -------------------------------------------------
+// Forward mouse presses to the current game mode
 function mousePressed() {
   if (state === "mapEditor") {
     mg.mousePressed?.();
@@ -434,9 +448,7 @@ function mousePressed() {
   }
 }
 
-// -------------------------------------------------
-// End Screen
-// -------------------------------------------------
+// Show the "Game Over" screen with a button to return to main menu
 function endScreenBtn() {
   btnBackMenu = createButton("Back to Main Menu");
   btnBackMenu.position(width / 2 - 100, height / 2);

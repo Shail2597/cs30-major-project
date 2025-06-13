@@ -1,6 +1,8 @@
 // class/mapLoader.js
+// MapLoader class handles loading, displaying, and managing tile maps for the game
 class MapLoader {
   constructor({ cols, rows, tileSize, bgCount, wallCount, decCount }) {
+    // Store map dimensions and tile counts
     this.cols = cols;
     this.rows = rows;
     this.tileSize = tileSize;
@@ -8,52 +10,60 @@ class MapLoader {
     this.wallCount = wallCount;
     this.decCount = decCount;
 
+    // Initialize map layers (base and decoration)
     this.layers = {
       base: Array.from({ length: rows }, () => Array(cols).fill(null)),
       decoration: Array.from({ length: rows }, () => Array(cols).fill(null))
     };
 
+    // Store loaded images and paths for each tile type
     this.images = {};
     this.bgPaths = [];
     this.wallPaths = [];
     this.decPaths = [];
 
+    // File input and game objects
     this.fileInput = null;
     this.player = new King();
     this.walls = new Group();
-    this.pig = null; // Pig will only be created after map is loaded
+    this.pig = null; // Pig(s) will be created after map is loaded
   }
 
+  // Preload all tile and sprite images
   preload() {
+    // Load background tile images
     for (let i = 1; i <= this.bgCount; i++) {
       const p = `blocks/backgroundWalls/bg${i}.png`;
       this.bgPaths.push(p);
       this.images[p] = loadImage(p);
     }
+    // Load wall tile images
     for (let i = 1; i <= this.wallCount; i++) {
       const p = `blocks/walls/wa${i}.png`;
       this.wallPaths.push(p);
       this.images[p] = loadImage(p);
     }
+    // Load decoration tile images
     for (let i = 1; i <= this.decCount; i++) {
       const p = `blocks/decoration/dec${i}.png`;
       this.decPaths.push(p);
       this.images[p] = loadImage(p);
     }
+    // Load player and pig sprite sheets
     this.kingSpriteSheet = loadImage("asset/king_human_full.png");
     this.pigSpriteSheet = loadImage("asset/pig.png");
   }
 
+  // Setup canvas, UI buttons, and gravity
   setup(){
     world.gravity.y = 9; // Set gravity for the game
     createCanvas(windowWidth, windowHeight);
     noSmooth();
 
-    //this.player.respawn();
-    // Do NOT respawn pig here
-
+    // Setup file input for loading maps
     this.fileInput = createFileInput(file => this.handleFile(file));
     this.fileInput.hide();
+    // Load Map button
     this.loadBtn = createButton('Load Map')
       .position(10, 10)
       .size(100, 30)
@@ -65,6 +75,7 @@ class MapLoader {
       .style('font-size', '16px')
       .style('font-family', 'Arial, sans-serif')
       .mousePressed(() => this.fileInput.elt.click());
+    // Back button
     this.backBtn = createButton('Back')
       .position(10, 50)
       .size(100, 30)
@@ -77,6 +88,7 @@ class MapLoader {
       .style('font-family', 'Arial, sans-serif')
       .mousePressed(() => location.reload());
 
+    // Button hover effects
     this.loadBtn.mouseOver(() => {
       this.loadBtn.style('background-color', '#8541ee');
     });
@@ -92,9 +104,11 @@ class MapLoader {
     }); 
   }
 
+  // Main draw loop: draws background, grid, player, and pigs
   draw() {
     background(62, 56, 80);
 
+    // Center the grid on the canvas
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
     const offsetX = (width - gridW) / 2;
@@ -105,21 +119,22 @@ class MapLoader {
     this.drawGrid();
     pop();
 
+    // Draw player and pigs if they exist
     if (this.player && this.player.hitBox) {
-      // Clean up any null pigs first
+      // Remove any null pigs
       if (this.pigs) {
         this.pigs = this.pigs.filter(pig => pig && pig.pigSpi && pig.hitBoxPig);
       }
 
       if (this.pigs && this.pigs.length > 0) {
-        // Only update pigs if player is not dead
+        // Update pigs only if player is alive
         if (!this.player.isDead) {
           for (const pig of this.pigs) {
             pig.doAll(this.player.getX(), this.player.getY(), this.player);
           }
         }
         else {
-          // If player is dead, just draw the pigs in their current state
+          // If player is dead, just draw pigs in current state
           for (const pig of this.pigs) {
             if (pig && pig.pigSpi) {
               pig.pigSpi.update();
@@ -128,9 +143,12 @@ class MapLoader {
           }
         }
       }
+      // Update and draw player
       this.player.doAll(this.walls, this.pigs);
     }
   }
+
+  // Draws the tile grid, decorations, and grid lines
   drawGrid() {
     noStroke();
     fill(62, 56, 80);
@@ -138,7 +156,7 @@ class MapLoader {
 
     imageMode(CORNER);
 
-    // base
+    // Draw base tiles
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const src = this.layers.base[y][x];
@@ -148,7 +166,7 @@ class MapLoader {
       }
     }
 
-    // decoration
+    // Draw decoration tiles
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const src = this.layers.decoration[y][x];
@@ -158,7 +176,7 @@ class MapLoader {
       }
     }
 
-    // grid lines
+    // Draw grid lines
     noStroke(1);
     fill(62, 56, 80);
     for (let i = 0; i <= this.cols; i++) {
@@ -169,10 +187,12 @@ class MapLoader {
     }
   }
 
+  // Handles loading a map file and spawning objects
   handleFile(file) {
     const PLAYER_SPAWN_TILE = "blocks/decoration/dec21.png";
     const PIG_SPAWN_TILE = "blocks/decoration/dec22.png";
 
+    // Remove previous player and pigs
     if (this.player instanceof King) {
       this.player.destroy();
       this.player = null;
@@ -181,18 +201,16 @@ class MapLoader {
     if (Array.isArray(this.pigs)) {
       for (const oldPig of this.pigs) {
         if (typeof oldPig.destroy === 'function') {
-          // If you gave Pig a destroy() method similar to King.destroy()
           oldPig.destroy();
         }
         else if (oldPig.pigSpi && typeof oldPig.pigSpi.remove === 'function') {
-          // Otherwise, at least remove its p5.play sprite(s)
           oldPig.pigSpi.remove();
         }
-        // (Remove other internal Pig sprites here if needed.)
       }
       this.pigs = [];
     }
     
+    // Validate file
     if (!file || !file.data) {
       return;
     }
@@ -203,9 +221,10 @@ class MapLoader {
     }
 
     try {
+      // Parse map data
       const data = typeof file.data === 'string' ? JSON.parse(file.data) : file.data;
 
-      // Validate map structure
+      // Validate base layer structure
       if (!Array.isArray(data.base) || data.base.length !== this.rows ||
           !data.base.every(r => Array.isArray(r) && r.length === this.cols)) {
         throw new Error('Missing or malformed base layer');
@@ -213,6 +232,7 @@ class MapLoader {
 
       this.layers.base = data.base;
 
+      // Validate decoration layer structure
       if (Array.isArray(data.decoration) && data.decoration.length === this.rows &&
           data.decoration.every(r => Array.isArray(r) && r.length === this.cols)) {
         this.layers.decoration = data.decoration;
@@ -221,11 +241,10 @@ class MapLoader {
         this.layers.decoration = Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
       }
 
-
-      // Build wall colliders
+      // Build wall colliders for the map
       this.buildWallColliders();
 
-      // Scan for special tiles
+      // Find player and pig spawn positions
       let playerSpawnPos = null;
       const pigSpawnPositions = [];
 
@@ -243,7 +262,7 @@ class MapLoader {
         }
       }
 
-      // Create King
+      // Create player (King) and set spawn position
       this.player = new King();
       if (!this.kingSpriteSheet) {
         throw new Error("King sprite sheet not loaded.");
@@ -263,7 +282,7 @@ class MapLoader {
 
       this.player.spi.visible = true;
 
-      // Create Pigs
+      // Create pigs at their spawn positions
       this.pigs = [];
       for (const pos of pigSpawnPositions) {
         if (!this.pigSpriteSheet) {
@@ -276,7 +295,7 @@ class MapLoader {
         );
 
         pig.pre(this.pigSpriteSheet);
-        pig.pigSpi.visible = true; // <-- FIXED HERE
+        pig.pigSpi.visible = true;
         this.pigs.push(pig);
       }
 
@@ -291,11 +310,13 @@ class MapLoader {
     }
   }
 
-
+  // Builds wall colliders for all wall and certain decoration tiles
   buildWallColliders() {
+    // Remove previous wall sprites
     for (let i = this.walls.length - 1; i >= 0; i--) {
       this.walls[i].remove();
     }
+    // Remove pigs and player if present
     if (this.pigs) {
       this.pigs.forEach(p => {
         if (typeof p.remove === "function") {
@@ -306,11 +327,13 @@ class MapLoader {
       this.player = null;
     }
 
+    // Calculate grid offset for centering
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
     const offsetX = (width - gridW) / 2;
     const offsetY = (height - gridH) / 2;
 
+    // Add wall colliders for wall tiles
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const src = this.layers.base[y][x];
@@ -328,6 +351,7 @@ class MapLoader {
       }
     }
 
+    // Add wall colliders for certain decoration tiles (platforms, etc.)
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const src = this.layers.decoration[y][x];
@@ -336,6 +360,7 @@ class MapLoader {
           const num = parseInt(match[1]);
 
           if (num >= 1 && num <= 4) {
+            // Platform type 1-4
             let s = new Sprite(
               offsetX + x * this.tileSize + this.tileSize / 2,
               offsetY + y * this.tileSize + this.tileSize / 4 - 4,
@@ -348,6 +373,7 @@ class MapLoader {
             this.walls.add(s);
           }
           else if (num >= 9 && num <= 12) {
+            // Thin platform type 9-12
             let s = new Sprite(
               offsetX + x * this.tileSize + this.tileSize / 2,
               offsetY + y * this.tileSize + this.tileSize / 4 - 8,
@@ -360,6 +386,7 @@ class MapLoader {
             this.walls.add(s);
           }
           else if (num === 23) {
+            // Special collider for decoration 23
             let s = new Sprite(
               offsetX + x * this.tileSize + this.tileSize / 3,
               offsetY + y * this.tileSize + this.tileSize * 0.75,
@@ -377,4 +404,5 @@ class MapLoader {
   }
 }
 
+// Expose MapLoader globally
 window.MapLoader = MapLoader;

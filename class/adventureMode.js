@@ -1,6 +1,7 @@
-// class/adventureMode.js
+// AdventureMode class handles the main logic for adventure mode gameplay
 class AdventureMode {
   constructor({ cols, rows, tileSize, bgCount, wallCount, decCount }) {
+    // Grid and tile setup
     this.cols      = cols;
     this.rows      = rows;
     this.tileSize  = tileSize;
@@ -8,13 +9,13 @@ class AdventureMode {
     this.wallCount  = wallCount;
     this.decCount   = decCount;
 
-    // Layers for tiles
+    // Tile layers for base and decoration
     this.layers = {
       base:       Array.from({ length: rows }, () => Array(cols).fill(null)),
       decoration: Array.from({ length: rows }, () => Array(cols).fill(null))
     };
 
-    // Image assets
+    // Image asset storage
     this.images    = {};
     this.bgPaths    = [];
     this.wallPaths  = [];
@@ -25,55 +26,58 @@ class AdventureMode {
     this.pigs   = [];
     this.walls  = new Group();
 
+    // Map and state tracking
     this.currentMap = 1;  // Always start at 1
     this.totalMaps = 5;
     this.isTransitioning = false;
     this.canExit = false;
-
-    // Add this line
+    // Track last completed level using localStorage
     this.lastCompletedLevel = parseInt(localStorage.getItem('lastCompletedLevel')) || 0;
   }
 
+  // Calculate horizontal offset for centering grid
   get offsetX() { 
     return (width  - this.cols * this.tileSize) / 2; 
   }
+  // Calculate vertical offset for centering grid
   get offsetY() { 
     return (height - this.rows * this.tileSize) / 2; 
   }
 
+  // Preload all tile and sprite images
   preload() {
-    // Preload tile images
+    // Preload background tiles
     for (let i = 1; i <= this.bgCount; i++) {
       const p = `blocks/backgroundWalls/bg${i}.png`;
       this.bgPaths.push(p);
       this.images[p] = loadImage(p);
     }
+    // Preload wall tiles
     for (let i = 1; i <= this.wallCount; i++) {
       const p = `blocks/walls/wa${i}.png`;
       this.wallPaths.push(p);
       this.images[p] = loadImage(p);
     }
+    // Preload decoration tiles
     for (let i = 1; i <= this.decCount; i++) {
       const p = `blocks/decoration/dec${i}.png`;
       this.decPaths.push(p);
       this.images[p] = loadImage(p);
     }
-    // Preload sprites
+    // Preload player and pig sprites
     this.kingSheet = loadImage("asset/king_human_full.png");
     this.pigSheet  = loadImage("asset/pig.png");
-    // Preload JSON map
-    this.mapData   = loadJSON('asset/Map-1.json');
   }
 
-  // Add new method to load maps
+  // Load a map by number and set up the level
   loadMap(mapNumber) {
     this.isTransitioning = true;
     console.log("Attempting to load map:", mapNumber); // Debug log
     
-    // First cleanup existing entities
+    // Clean up any existing entities and sprites
     this._cleanupCurrentLevel();
     
-    // Load new map
+    // Fetch map data from JSON file
     fetch(`adventure/${mapNumber}.json`)
       .then(response => {
         if (!response.ok) {
@@ -89,7 +93,7 @@ class AdventureMode {
         this.mapData = data;
         this._applyMapData(this.mapData);
         
-        // Store current level
+        // Update current map number
         this.currentMap = mapNumber;
         console.log("Successfully loaded map:", this.currentMap); // Debug log
         
@@ -105,11 +109,12 @@ class AdventureMode {
       });
   }
 
-  // Add this new method to save progress
+  // Save progress to localStorage
   _saveProgress() {
     localStorage.setItem('lastCompletedLevel', this.currentMap.toString());
   }
 
+  // Handle level completion and transition to next level
   completeLevel() {
     if (this.isTransitioning) {
       return;
@@ -128,7 +133,7 @@ class AdventureMode {
 
     const nextLevel = this.currentMap + 1;
     
-    // Handle game completion - only reload if all levels are done
+    // If all levels are done, reload to menu
     if (nextLevel > this.totalMaps) {
       console.log("Game complete, returning to menu");
       location.reload();
@@ -156,7 +161,7 @@ class AdventureMode {
     }, 500);
   }
 
-  // Add level completion check
+  // Check if level is complete (all pigs dead, player alive, player at exit)
   checkLevelComplete() {
     // Only check if we have both player and pigs
     if (!this.player || !Array.isArray(this.pigs)) {
@@ -193,7 +198,7 @@ class AdventureMode {
         const playerX = this.player.getX();
         const playerY = this.player.getY();
 
-        // Debug visualization
+        // Debug visualization for exit zone
         push();
         noFill();
         stroke(255, 0, 0);
@@ -213,10 +218,10 @@ class AdventureMode {
     }
   }
 
+  // Remove all sprites, colliders, and reset layers
   _cleanupCurrentLevel() {
-    // Clean up all sprites and colliders
+    // Clean up all wall sprites
     if (this.walls) {
-      // Remove all wall sprites
       for (let wall of this.walls) {
         if (wall) {
           wall.remove();
@@ -248,7 +253,7 @@ class AdventureMode {
       }
     }
 
-    // Reset layers
+    // Reset tile layers
     this.layers = {
       base: Array.from({ length: this.rows }, () => Array(this.cols).fill(null)),
       decoration: Array.from({ length: this.rows }, () => Array(this.cols).fill(null))
@@ -262,12 +267,13 @@ class AdventureMode {
     }
   }
 
+  // Set up canvas and UI
   setup() {
     // Create canvas sized to grid
     createCanvas(windowWidth, windowHeight);
     noSmooth();
 
-    // Initialize game world
+    // Initialize game world gravity
     world.gravity.y = 9;
 
     // Back button setup
@@ -286,6 +292,7 @@ class AdventureMode {
     this.backBtn.mouseOut(() => this.backBtn.style('background-color', '#3E3850'));
   }
 
+  // Main draw loop for adventure mode
   draw() {
     background(62, 56, 80);
 
@@ -299,11 +306,12 @@ class AdventureMode {
     this._drawGrid();
     pop();
 
-    // Add null checks for entities
+    // Update player logic
     if (this.player && typeof this.player.doAll === 'function') {
       this.player.doAll(this.walls, this.pigs);
     }
 
+    // Update pig logic
     if (Array.isArray(this.pigs)) {
       for (const pig of this.pigs) {
         if (pig && typeof pig.doAll === 'function' && this.player) {
@@ -323,6 +331,7 @@ class AdventureMode {
     }
   }
 
+  // Apply map data to layers and build level
   _applyMapData(data) {
     if (!data || !data.base || !data.decoration) {
       console.error('Invalid map data structure');
@@ -335,11 +344,11 @@ class AdventureMode {
     }
     this.walls = new Group();
 
-    // Assign layers
+    // Assign layers from map data
     this.layers.base = data.base.map(r => [...r]);
     this.layers.decoration = data.decoration.map(r => [...r]);
 
-    // Build new level
+    // Build wall colliders and spawn entities
     this._buildWallColliders();
     this._spawnEntities();
 
@@ -347,6 +356,7 @@ class AdventureMode {
     world.gravity.y = 9;
   }
 
+  // Draw the grid and all tiles
   _drawGrid() {
     imageMode(CORNER);
     // Draw base layer
@@ -367,17 +377,18 @@ class AdventureMode {
         }
       }
     }
-    // Grid lines
+    // Draw grid lines
     noStroke(1);
     fill(62, 56, 80);
     for (let i = 0; i <= this.cols; i++) {
       line(i*this.tileSize, 0, i*this.tileSize, this.rows*this.tileSize);
     }
     for (let j = 0; j <= this.rows; j++) {
-      line(0, j*this.tileSize, this.cols*this.tileSize, j*this.tileSize);
+      line(0, j*this.tileSize, j*this.tileSize, this.rows*this.tileSize);
     }
   }
 
+  // Build wall and decoration colliders for the level
   _buildWallColliders() {
     // Remove existing walls
     for (let i = this.walls.length - 1; i >= 0; i--) {
@@ -399,7 +410,7 @@ class AdventureMode {
     const offsetX = (width - gridW) / 2;
     const offsetY = (height - gridH) / 2;
 
-    // Build wall colliders
+    // Build wall colliders from base layer
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const src = this.layers.base[y][x];
@@ -417,7 +428,7 @@ class AdventureMode {
       }
     }
 
-    // Add decoration colliders
+    // Add decoration colliders for certain decoration tiles
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const src = this.layers.decoration[y][x];
@@ -466,6 +477,7 @@ class AdventureMode {
     }
   }
 
+  // Spawn player and pig entities based on decoration tiles
   _spawnEntities() {
     const PLAYER_SPAWN = 'blocks/decoration/dec21.png';
     const PIG_SPAWN = 'blocks/decoration/dec22.png';
@@ -486,7 +498,7 @@ class AdventureMode {
       this.pigs = [];
     }
 
-    // Spawn new entities
+    // Spawn new entities based on map data
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         const tile = this.layers.decoration[y][x];
@@ -525,4 +537,5 @@ class AdventureMode {
   }
 }
 
+// Expose AdventureMode
 window.AdventureMode = AdventureMode;
