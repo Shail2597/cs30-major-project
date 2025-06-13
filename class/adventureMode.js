@@ -490,7 +490,7 @@ class AdventureMode {
   _spawnEntities() {
     const PLAYER_SPAWN = 'blocks/decoration/dec21.png';
     const PIG_SPAWN = 'blocks/decoration/dec22.png';
-   const POWERUP_SPAWN    = 'blocks/decoration/dec24.png';
+    const POWERUP_SPAWN    = 'blocks/decoration/dec24.png';
     
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
@@ -510,7 +510,7 @@ class AdventureMode {
 
     if (this.powerUps) {
       this.powerUps.forEach(p => p.destroy?.());
-    this.powerUps = [];
+      this.powerUps = [];
     }
 
     // Spawn new entities based on map data

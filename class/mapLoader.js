@@ -214,7 +214,8 @@ class MapLoader {
       for (const oldPig of this.pigs) {
         if (typeof oldPig.destroy === 'function') {
           oldPig.destroy();
-        } else if (oldPig.pigSpi && typeof oldPig.pigSpi.remove === 'function') {
+        }
+        else if (oldPig.pigSpi && typeof oldPig.pigSpi.remove === 'function') {
           oldPig.pigSpi.remove();
         }
       }
@@ -227,7 +228,9 @@ class MapLoader {
     const powerUpPositions    = [];
 
     // 4) Validate file type
-    if (!file || !file.data) return;
+    if (!file || !file.data) {
+      return;
+    }
     if (!file.name.toLowerCase().endsWith('.json')) {
       alert('Please select a .json file');
       return;
@@ -248,7 +251,8 @@ class MapLoader {
           data.decoration.length === this.rows &&
           data.decoration.every(r => Array.isArray(r) && r.length === this.cols)) {
         this.layers.decoration = data.decoration;
-      } else {
+      }
+      else {
         // fallback empty decoration
         this.layers.decoration = Array.from({ length: this.rows }, 
           () => Array(this.cols).fill(null));
@@ -285,7 +289,8 @@ class MapLoader {
       if (playerSpawnPos) {
         this.player.hitBox.position.x = offsetX + playerSpawnPos.x * this.tileSize + this.tileSize/2;
         this.player.hitBox.position.y = offsetY + playerSpawnPos.y * this.tileSize + this.tileSize/2;
-      } else {
+      }
+      else {
         this.player.respawn();
       }
       this.player.spi.visible = true;

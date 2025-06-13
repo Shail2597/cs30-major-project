@@ -58,26 +58,33 @@ class PowerUp {
    * - once disappear finishes → remove both sprites
    */
   update(player) {
-    // skip if already gone
-    if (this.finished) return;
+    if (this.finished) {
+      return;
+    }
 
-    // animate
+    // advance the disappear or idle animation
     this.powerSpi.update();
 
-    // on first overlap: switch to disappear and bump lives
+    // on first overlap
     if (!this.collected && this.hitBox.overlap(player.spi)) {
       this.collected = true;
       this.powerSpi.changeAni('disappear');
-      player.lives = Math.min(player.lives + 1, 3);
+
+      // only add a life if the player has fewer than 3
+      if (typeof player.lives === 'number' && player.lives < 3) {
+        player.lives++;
+      }
     }
 
-    // once disappear animation is at its last frame, clean up
-    if (this.collected && this.powerSpi.ani.frame >= this.powerSpi.ani.lastFrame) {
+    // when disappear reaches its last frame, clean up
+    const ani = this.powerSpi.ani;
+    if (this.collected && ani.frame >= ani.lastFrame) {
       this.finished = true;
       this.hitBox.remove();
       this.powerSpi.remove();
     }
   }
+
 
   /**
    * Draw the power-up sprite

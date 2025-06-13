@@ -41,7 +41,8 @@ function preload() {
         bgMusic = null;
       }
     );
-  } catch (err) {
+  }
+  catch (err) {
     console.error("Error loading sound:", err);
     bgMusic = null;
   }
@@ -96,8 +97,19 @@ function draw() {
   else if (state === "mapLoader") {
     // Draw map loader and check for player death
     ml.draw();
+    if (ml.player && typeof ml.player.lives === 'number') {
+      if (ml.player.lives === 3) {
+        image(bar3, 100, 100, 198, 102);
+      }
+      else if (ml.player.lives === 2) {
+        image(bar2, 100, 100, 198, 102);
+      }
+      else if (ml.player.lives === 1) {
+        image(bar1, 100, 100, 198, 102);
+      }
+    }
     if (ml.player) {
-      
+
       if (ml.player.isDead) {
         prevState = "mapLoader";
         ml.loadBtn?.hide();
@@ -115,6 +127,17 @@ function draw() {
   else if (state === "adventure") {
     // Draw adventure mode and check for player death
     adv.draw();
+    if (adv.player && typeof adv.player.lives === 'number') {
+      if (adv.player.lives === 3) {
+        image(bar3, 100, 100, 198, 102);
+      }
+      else if (adv.player.lives === 2) {
+        image(bar2, 100, 100, 198, 102);
+      }
+      else if (adv.player.lives === 1) {
+        image(bar1, 100, 100, 198, 102);
+      }
+    }
     if (adv.player) {
       if (adv.player.isDead) {
         prevState = "adventure";
@@ -254,7 +277,8 @@ function setupIntroScreen() {
     
     if (startLevel <= adv.totalMaps) {
       adv.loadMap(startLevel);
-    } else {
+    }
+    else {
       adv.loadMap(1);
     }
   });
@@ -380,7 +404,8 @@ function keyPressed() {
   if (key === 'm' || key === 'M') {
     if (bgMusic.isPlaying()) {
       bgMusic.pause();
-    } else {
+    }
+    else {
       bgMusic.loop();
     }
   }
