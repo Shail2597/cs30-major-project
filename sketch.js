@@ -28,6 +28,9 @@ let backButtonKB;
 // Preload assets and initialize game modes
 function preload() {
   introImg = loadImage("asset/introWindow.png");
+  bar1 =  loadImage("asset/Live Bar1.png");
+  bar2 =  loadImage("asset/Live Bar2.png");
+  bar3 =  loadImage("asset/Live Bar3.png");
   
   // Try to load background music, handle errors gracefully
   try {
@@ -94,6 +97,7 @@ function draw() {
     // Draw map loader and check for player death
     ml.draw();
     if (ml.player) {
+      
       if (ml.player.isDead) {
         prevState = "mapLoader";
         ml.loadBtn?.hide();

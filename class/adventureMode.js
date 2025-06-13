@@ -25,6 +25,7 @@ class AdventureMode {
     this.player = null;
     this.pigs   = [];
     this.walls  = new Group();
+    this.powerUps = [];
 
     // Map and state tracking
     this.currentMap = 1;  // Always start at 1
@@ -67,7 +68,7 @@ class AdventureMode {
     // Preload player and pig sprites
     this.kingSheet = loadImage("asset/king_human_full.png");
     this.pigSheet  = loadImage("asset/pig.png");
-    this.powerUpSheet = loadImage("asset/heartPowerUp.png");
+    this.powerUpImage = loadImage("asset/heartPowerUp.png");
   }
 
   // Load a map by number and set up the level
@@ -330,6 +331,13 @@ class AdventureMode {
     if (this.isTransitioning) {
       background(62, 56, 80);
     }
+
+    for (let pu of this.powerUps) {
+      pu.update(this.player);
+      pu.draw();
+    }
+    // remove any that have finished their vanish
+    this.powerUps = this.powerUps.filter(pu => !pu.finished);
   }
 
   // Apply map data to layers and build level
@@ -482,7 +490,7 @@ class AdventureMode {
   _spawnEntities() {
     const PLAYER_SPAWN = 'blocks/decoration/dec21.png';
     const PIG_SPAWN = 'blocks/decoration/dec22.png';
-    const POWERUP_SPAWN_TILE = 'blocks/decoration/dec24.png';
+   const POWERUP_SPAWN    = 'blocks/decoration/dec24.png';
     
     const gridW = this.cols * this.tileSize;
     const gridH = this.rows * this.tileSize;
@@ -498,6 +506,11 @@ class AdventureMode {
     if (this.pigs) {
       this.pigs.forEach(pig => pig?.destroy());
       this.pigs = [];
+    }
+
+    if (this.powerUps) {
+      this.powerUps.forEach(p => p.destroy?.());
+    this.powerUps = [];
     }
 
     // Spawn new entities based on map data
@@ -525,11 +538,16 @@ class AdventureMode {
           this.layers.decoration[y][x] = null;
         }
         else if (tile === POWERUP_SPAWN) {
-          const spawnX = offsetX + x*this.tileSize + this.tileSize/2;
-          const spawnY = offsetY + y*this.tileSize + this.tileSize/2;
+          const spawnX = offsetX + x * this.tileSize + this.tileSize/2;
+          const spawnY = offsetY + y * this.tileSize + this.tileSize/2;
+
+          // instantiate and configure PowerUp
           const pu = new PowerUp();
-          pu.pre( this.powerUpSheet );
+          pu.pre(this.powerUpImage);
           pu.spawn(spawnX, spawnY);
+          this.powerUps.push(pu);
+
+          // remove tile so it doesn’t respawn
           this.layers.decoration[y][x] = null;
         }
       }
@@ -542,7 +560,8 @@ class AdventureMode {
 
     console.log("Spawned entities:", {
       player: this.player ? "spawned" : "not spawned",
-      pigs: this.pigs.length
+      pigs: this.pigs.length,
+      powerUps: this.powerUps.length
     });
   }
 }
