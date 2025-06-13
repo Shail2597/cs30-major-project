@@ -73,7 +73,9 @@ function draw() {
         ml.loadBtn?.hide();
         ml.player.spi.visible = false;
         for (let pig of ml.pigs) {
-          pig.pigSpi.visible = false;
+          if (pig && pig.pigSpi) {
+            pig.pigSpi.visible = false;
+          }
         }
         state = "end";
         endScreenBtn();
@@ -88,7 +90,9 @@ function draw() {
         adv.backBtn?.hide();
         adv.player.spi.visible = false;
         for (let pig of adv.pigs) {
-          pig.pigSpi.visible = false;
+          if (pig && pig.pigSpi) {
+            pig.pigSpi.visible = false;
+          }
         }
         state = "end";
         endScreenBtn();
