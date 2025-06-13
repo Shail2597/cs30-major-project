@@ -89,6 +89,19 @@ function draw() {
     // Draw intro screen
     imageMode(CORNER);
     image(introImg, 0, 0, width, height);
+    fill('#e6816d');
+    stroke(0);
+    strokeWeight(4);
+    textSize(24);
+    textStyle(BOLD);
+    textAlign(CENTER, CENTER);
+    text(
+      "Please press ESC key after starting any game mode for instructions",
+      width * 0.04,    // x position (6% in from left)
+      height * 0.75,    // y position (middle of screen)
+      width - 120      // maxTextWidth
+    );
+    strokeWeight(1);
   }
   else if (state === "mapEditor") {
     // Draw map editor
