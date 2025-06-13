@@ -4,6 +4,7 @@ let mg, ml, adv;
 let state = "intro";      // "intro" | "mapEditor" | "mapLoader" | "adventure" | "keyBinds"
 let prevState = null;     // remembers previous state
 let introImg;
+let bgMusic;  // Add this line
 
 // ─── CUSTOM KEY‐BIND MANAGER ───────────────────────────────────────
 let controls;
@@ -23,12 +24,15 @@ function codeToLabel(code) {
 }
 
 // Intro‐screen buttons:
-let btnMapEditor, btnAdventure, btnMapLoader;
+let btnMapEditor, btnAdventure, btnMapLoader, btnReset;
 // Pause/Key‐Binds UI:
 let backButtonKB;
 
 function preload() {
   introImg = loadImage("asset/introWindow.png");
+  // Load background music
+  bgMusic = loadSound('asset/bgsound.mp3');
+  
   mg = new MapGenerator({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
   mg.preload();
   ml = new MapLoader({ cols: 20, rows: 14, tileSize: 64, bgCount: 47, wallCount: 47, decCount: 24 });
@@ -39,6 +43,11 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  
+  // Start background music
+  bgMusic.setVolume(0.5); // Set volume to 50%
+  bgMusic.loop();  // Make it loop continuously
+  
   // Initialize controls after p5 constants are available
   controls = {
     Jump:    UP_ARROW,
@@ -170,7 +179,21 @@ function setupIntroScreen() {
   btnAdventure.size(200, 40);
   styleButton(btnAdventure);
   btnAdventure.mousePressed(() => {
-    removeIntroButtons(); state = "adventure"; adv.setup();adv.loadMap(1);
+    removeIntroButtons(); 
+    state = "adventure"; 
+    adv.setup();
+
+    // Get last completed level and start from next level
+    const lastLevel = parseInt(localStorage.getItem('lastCompletedLevel')) || 0;
+    const startLevel = lastLevel + 1;
+    
+    // Ensure we don't exceed total maps
+    if (startLevel <= adv.totalMaps) {
+      adv.loadMap(startLevel);
+    } else {
+      // If all levels complete, start from 1
+      adv.loadMap(1);
+    }
   });
 
   btnMapLoader = createButton("Map Loader");
@@ -181,9 +204,20 @@ function setupIntroScreen() {
     removeIntroButtons(); state = "mapLoader"; ml.setup(); 
   });
 
-  [btnMapEditor, btnAdventure, btnMapLoader].forEach(btn => {
+  // Modify the Reset Progress button creation to use the global variable
+  btnReset = createButton("Reset Progress");
+  btnReset.position(width/2 - 100, height/2 + 160);
+  btnReset.size(200, 40);
+  styleButton(btnReset);
+  btnReset.mousePressed(() => {
+    localStorage.removeItem('lastCompletedLevel');
+    alert('Progress reset! Game will start from Level 1');
+  });
+
+  // Add hover effects for all buttons
+  [btnMapEditor, btnAdventure, btnMapLoader, btnReset].forEach(btn => {
     btn.mouseOver(() => btn.style('background-color', '#8541ee'));
-    btn.mouseOut (() => btn.style('background-color', '#3E3850'));
+    btn.mouseOut(() => btn.style('background-color', '#3E3850'));
   });
 }
 
@@ -199,15 +233,16 @@ function styleButton(btn) {
 }
 
 function removeIntroButtons() {
-  [btnMapEditor, btnAdventure, btnMapLoader].forEach(b => b && b.remove());
-  btnMapEditor = btnAdventure = btnMapLoader = null;
+  // Remove all buttons and reset their variables
+  [btnMapEditor, btnAdventure, btnMapLoader, btnReset].forEach(b => b && b.remove());
+  btnMapEditor = btnAdventure = btnMapLoader = btnReset = null;
 }
 
 // -------------------------------------------------
 // KEY PRESSED: Pause & Key-Bind Capture
 // -------------------------------------------------
 function keyPressed() {
-  // 1) Enter pause
+  // 1) Enter paumse
   if ((state === "mapEditor" || state === "mapLoader" || state === "adventure") && keyCode === ESCAPE) {
     prevState = state;
     state = "keyBinds";
@@ -275,6 +310,15 @@ function keyPressed() {
   }
   if (state === "adventure") {
     adv.keyPressed?.();
+  }
+
+  // Add a mute/unmute toggle with 'M' key
+  if (key === 'm' || key === 'M') {
+    if (bgMusic.isPlaying()) {
+      bgMusic.pause();
+    } else {
+      bgMusic.loop();
+    }
   }
 }
 

@@ -8,7 +8,7 @@ const PLAYER_ATTACK_COOLDOWN = 30;
 const PLAYER_ATTACK_RANGE = 50;
 
 const MAX_LIVES = 3;
-const MAX_HITS = 5;
+const MAX_HITS = 50;
 
 class King {
   constructor() {

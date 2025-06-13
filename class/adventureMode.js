@@ -29,6 +29,9 @@ class AdventureMode {
     this.totalMaps = 5;
     this.isTransitioning = false;
     this.canExit = false;
+
+    // Add this line
+    this.lastCompletedLevel = parseInt(localStorage.getItem('lastCompletedLevel')) || 0;
   }
 
   get offsetX() { 
@@ -102,33 +105,55 @@ class AdventureMode {
       });
   }
 
+  // Add this new method to save progress
+  _saveProgress() {
+    localStorage.setItem('lastCompletedLevel', this.currentMap.toString());
+  }
+
   completeLevel() {
     if (this.isTransitioning) {
       return;
     }
     
     this.isTransitioning = true;
-    console.log("Completing level:", this.currentMap); // Debug log
+    console.log("Completing level:", this.currentMap);
 
-    // Use the game's background color for transition
+    // Save progress when completing a level
+    this._saveProgress();
+
+    // Stage 1: Clean up current level and show purple background
+    this._cleanupCurrentLevel();
+    clear();
     background(62, 56, 80);
 
-    // Cleanup current level
-    this._cleanupCurrentLevel();
+    const nextLevel = this.currentMap + 1;
+    
+    // Handle game completion - only reload if all levels are done
+    if (nextLevel > this.totalMaps) {
+      console.log("Game complete, returning to menu");
+      location.reload();
+      return;
+    }
 
-    // Load next level after shorter delay
+    // Stage 2: Show black screen after 0.5 seconds
     setTimeout(() => {
-      const nextLevel = this.currentMap + 1;
-      console.log("Next level will be:", nextLevel); // Debug log
-      
-      if (nextLevel > this.totalMaps) {
-        console.log("Game complete, returning to menu"); // Debug log
-        location.reload();
-        return;
-      }
+      background(0);
 
-      this.loadMap(nextLevel);
-    }, 500); // Reduced to 500ms for faster transition
+      // Stage 3: Load next level after black screen shown for 0.5 seconds
+      setTimeout(() => {
+        // Reset player stats
+        if (this.player) {
+          this.player.lives = MAX_LIVES;
+          this.player.health = MAX_HITS;
+          this.player.isDead = false;
+        }
+
+        // Load next level instead of reloading page
+        this.loadMap(nextLevel);
+        this.currentMap = nextLevel;
+      }, 500);
+      
+    }, 500);
   }
 
   // Add level completion check
@@ -160,10 +185,10 @@ class AdventureMode {
         const exitY = this.offsetY + exitRow * this.tileSize;
 
         // Define a MUCH larger exit zone
-        const zoneLeft = rightX - this.tileSize * 8;    // 8 tiles wide
+        const zoneLeft = rightX - this.tileSize * 2;    // 3 tiles wide
         const zoneRight = rightX + this.tileSize;
         const zoneTop = exitY - this.tileSize * 6;      // 6 tiles up
-        const zoneBottom = exitY + this.tileSize * 2;     // 2 tiles down
+        const zoneBottom = exitY + this.tileSize ;     // 2 tiles down
 
         const playerX = this.player.getX();
         const playerY = this.player.getY();
